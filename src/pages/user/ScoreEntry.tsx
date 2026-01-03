@@ -77,11 +77,14 @@ export function ScoreEntry() {
           <h1 className="text-2xl font-bold text-gray-900">Enter Scores</h1>
           <Card>
             <div className="text-center py-8">
-              <p className="text-gray-500 mb-4">
+              <p className="text-gray-500 mb-2">
                 No course assigned for Round {selectedRound} yet.
               </p>
+              <p className="text-sm text-gray-400 mb-4">
+                Ask your trip admin to assign a course to this round.
+              </p>
               <Select
-                label="Select Round"
+                label="Try a different round"
                 options={Array.from({ length: currentTrip.numberOfRounds }, (_, i) => ({
                   value: (i + 1).toString(),
                   label: `Round ${i + 1}`,
