@@ -169,8 +169,15 @@ export function ScoreEntry() {
   const backNineTotal = holeScores.slice(9, 18).reduce((a, b) => a + b, 0);
   const totalGross = frontNineTotal + backNineTotal;
 
-  // Check if this hole is a par 3 (potential closest to pin)
+  // Find CTP hole for this round from prizes
+  const ctpPrize = currentTrip.prizes.find(
+    p => p.type === 'closest_to_pin' && p.roundNumber === selectedRound && p.ctpHole
+  );
+  const ctpHole = ctpPrize?.ctpHole;
+
+  // Check if this hole is a par 3 (potential closest to pin) OR is the designated CTP hole
   const isPar3 = currentHoleData.par === 3;
+  const isCtpHole = currentHole === ctpHole;
 
   return (
     <Layout>
@@ -221,8 +228,16 @@ export function ScoreEntry() {
               </Button>
 
               <div>
-                <div className="text-4xl font-bold text-green-700">
-                  Hole {currentHole}
+                <div className="flex items-center justify-center gap-2">
+                  <span className="text-4xl font-bold text-green-700">
+                    Hole {currentHole}
+                  </span>
+                  {isCtpHole && (
+                    <span className="flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium">
+                      <Target className="h-4 w-4" />
+                      CTP
+                    </span>
+                  )}
                 </div>
                 <div className="text-lg text-gray-600">
                   Par {currentHoleData.par}
@@ -324,10 +339,15 @@ export function ScoreEntry() {
                         key={h.number}
                         className={`px-2 py-1 text-center cursor-pointer hover:bg-gray-200 ${
                           currentHole === h.number ? 'bg-green-200' : ''
-                        }`}
+                        } ${h.number === ctpHole ? 'bg-orange-100' : ''}`}
                         onClick={() => setCurrentHole(h.number)}
                       >
-                        {h.number}
+                        <div className="flex flex-col items-center">
+                          {h.number}
+                          {h.number === ctpHole && (
+                            <Target className="h-3 w-3 text-orange-500" />
+                          )}
+                        </div>
                       </th>
                     ))}
                     <th className="px-2 py-1 text-center font-bold">Out</th>
@@ -389,10 +409,15 @@ export function ScoreEntry() {
                         key={h.number}
                         className={`px-2 py-1 text-center cursor-pointer hover:bg-gray-200 ${
                           currentHole === h.number ? 'bg-green-200' : ''
-                        }`}
+                        } ${h.number === ctpHole ? 'bg-orange-100' : ''}`}
                         onClick={() => setCurrentHole(h.number)}
                       >
-                        {h.number}
+                        <div className="flex flex-col items-center">
+                          {h.number}
+                          {h.number === ctpHole && (
+                            <Target className="h-3 w-3 text-orange-500" />
+                          )}
+                        </div>
                       </th>
                     ))}
                     <th className="px-2 py-1 text-center font-bold">In</th>

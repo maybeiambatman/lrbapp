@@ -595,14 +595,30 @@ function PrizesTab({
   trip: Trip;
   updatePrizes: (tripId: string, prizes: Prize[]) => void;
 }) {
+  const { scores } = useStore();
   const [prizes, setPrizes] = useState(trip.prizes);
   const [showAddPrize, setShowAddPrize] = useState(false);
   const [newPrizeName, setNewPrizeName] = useState('');
   const [newPrizeAmount, setNewPrizeAmount] = useState('');
 
+  // Get scores for this trip to show current leaders
+  const tripScores = scores.filter(s => s.tripId === trip.id);
+
   const handleAmountChange = (prizeId: string, amount: string) => {
     setPrizes((prev) =>
       prev.map((p) => (p.id === prizeId ? { ...p, amount: parseFloat(amount) || 0 } : p))
+    );
+  };
+
+  const handleCtpHoleChange = (prizeId: string, hole: string) => {
+    setPrizes((prev) =>
+      prev.map((p) => (p.id === prizeId ? { ...p, ctpHole: parseInt(hole) || undefined } : p))
+    );
+  };
+
+  const handleWinnerChange = (prizeId: string, winnerId: string) => {
+    setPrizes((prev) =>
+      prev.map((p) => (p.id === prizeId ? { ...p, winnerId: winnerId || undefined } : p))
     );
   };
 
@@ -624,6 +640,14 @@ function PrizesTab({
     setShowAddPrize(false);
   };
 
+  // Get current leader for a round (for display)
+  const getRoundLeader = (roundNumber: number) => {
+    const roundScores = tripScores
+      .filter(s => s.roundNumber === roundNumber && s.isComplete)
+      .sort((a, b) => a.netTotal - b.netTotal);
+    return roundScores[0];
+  };
+
   const totalPrizes = prizes.reduce((sum, p) => sum + p.amount, 0);
 
   return (
@@ -643,27 +667,75 @@ function PrizesTab({
         </div>
 
         <div className="divide-y">
-          {prizes.map((prize) => (
-            <div key={prize.id} className="py-3 flex items-center justify-between">
-              <div>
-                <span className="font-medium">{prize.name}</span>
-                {prize.roundNumber && (
-                  <span className="ml-2 text-xs bg-gray-100 px-2 py-0.5 rounded">
-                    Round {prize.roundNumber}
-                  </span>
+          {prizes.map((prize) => {
+            const isCTP = prize.type === 'closest_to_pin';
+            const isBestNetRound = prize.type === 'best_net_round';
+            const currentLeader = prize.roundNumber ? getRoundLeader(prize.roundNumber) : null;
+
+            return (
+              <div key={prize.id} className="py-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="font-medium">{prize.name}</span>
+                    {prize.roundNumber && (
+                      <span className="ml-2 text-xs bg-gray-100 px-2 py-0.5 rounded">
+                        Round {prize.roundNumber}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span>$</span>
+                    <input
+                      type="number"
+                      value={prize.amount}
+                      onChange={(e) => handleAmountChange(prize.id, e.target.value)}
+                      className="w-20 px-2 py-1 border rounded text-right"
+                    />
+                  </div>
+                </div>
+
+                {/* CTP specific controls */}
+                {isCTP && (
+                  <div className="flex flex-wrap gap-4 pl-4 border-l-2 border-orange-200">
+                    <div className="flex items-center gap-2">
+                      <label className="text-sm text-gray-600">CTP Hole:</label>
+                      <select
+                        value={prize.ctpHole || ''}
+                        onChange={(e) => handleCtpHoleChange(prize.id, e.target.value)}
+                        className="px-2 py-1 border rounded text-sm"
+                      >
+                        <option value="">Select hole</option>
+                        {[3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18].map((h) => (
+                          <option key={h} value={h}>Hole {h}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <label className="text-sm text-gray-600">Winner:</label>
+                      <select
+                        value={prize.winnerId || ''}
+                        onChange={(e) => handleWinnerChange(prize.id, e.target.value)}
+                        className="px-2 py-1 border rounded text-sm"
+                      >
+                        <option value="">Select winner</option>
+                        {trip.players.map((p) => (
+                          <option key={p.id} value={p.id}>{p.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                )}
+
+                {/* Show current leader for best net round prizes */}
+                {isBestNetRound && currentLeader && (
+                  <div className="text-sm text-gray-500 pl-4">
+                    Current leader: <span className="font-medium text-green-600">{currentLeader.playerName}</span>
+                    {' '}(Net: {currentLeader.netTotal})
+                  </div>
                 )}
               </div>
-              <div className="flex items-center gap-2">
-                <span>$</span>
-                <input
-                  type="number"
-                  value={prize.amount}
-                  onChange={(e) => handleAmountChange(prize.id, e.target.value)}
-                  className="w-20 px-2 py-1 border rounded text-right"
-                />
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="flex justify-between items-center pt-4 border-t">

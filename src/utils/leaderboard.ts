@@ -103,12 +103,12 @@ export function getBestNetForRound(
 }
 
 /**
- * Calculate purse/winnings distribution
+ * Calculate purse/winnings distribution with auto-calculated winners
  */
 export function calculatePurse(
   trip: Trip,
-  _scores: RoundScore[],
-  _leaderboard: LeaderboardEntry[]
+  scores: RoundScore[],
+  leaderboard: LeaderboardEntry[]
 ): PurseEntry[] {
   const purseMap = new Map<string, PurseEntry>();
 
@@ -123,10 +123,38 @@ export function calculatePurse(
     });
   });
 
-  // Add prize winnings
+  // Calculate winners for each prize
   trip.prizes.forEach((prize) => {
-    if (prize.winnerId) {
-      const entry = purseMap.get(prize.winnerId);
+    let winnerId: string | undefined = prize.winnerId;
+
+    // Auto-calculate winners for score-based prizes
+    if (!winnerId) {
+      switch (prize.type) {
+        case 'best_cumulative_net':
+          // Winner is the player with lowest total net who completed all rounds
+          if (leaderboard.length > 0 && leaderboard[0].roundsCompleted === trip.numberOfRounds) {
+            winnerId = leaderboard[0].playerId;
+          }
+          break;
+
+        case 'best_net_round':
+          if (prize.roundNumber) {
+            const bestNet = getBestNetForRound(scores, trip.id, prize.roundNumber);
+            if (bestNet) {
+              winnerId = bestNet.playerId;
+            }
+          }
+          break;
+
+        case 'closest_to_pin':
+          // CTP must be manually awarded - no auto-calculation
+          break;
+      }
+    }
+
+    // Add prize to winner
+    if (winnerId) {
+      const entry = purseMap.get(winnerId);
       if (entry) {
         entry.prizes.push({
           prizeName: prize.name,
@@ -168,41 +196,41 @@ export function getClosestToPinForRound(
 }
 
 /**
- * Auto-determine prize winners based on scores
+ * Get the calculated winner for a prize (either manual or auto-calculated)
  */
-export function determinePrizeWinners(
+export function getPrizeWinner(
+  prize: Trip['prizes'][0],
   trip: Trip,
-  scores: RoundScore[]
-): Map<string, string> {
-  const winners = new Map<string, string>();
-  const leaderboard = calculateLeaderboard(trip, scores);
+  scores: RoundScore[],
+  leaderboard: LeaderboardEntry[]
+): { winnerId: string; playerName: string } | null {
+  // If manually awarded, use that
+  if (prize.winnerId) {
+    const player = trip.players.find(p => p.id === prize.winnerId);
+    return player ? { winnerId: prize.winnerId, playerName: player.name } : null;
+  }
 
-  trip.prizes.forEach((prize) => {
-    switch (prize.type) {
-      case 'best_cumulative_net':
-        // Winner is the player with lowest total net
-        if (leaderboard.length > 0 && leaderboard[0].roundsCompleted === trip.numberOfRounds) {
-          winners.set(prize.id, leaderboard[0].playerId);
+  // Auto-calculate based on prize type
+  switch (prize.type) {
+    case 'best_cumulative_net':
+      if (leaderboard.length > 0 && leaderboard[0].roundsCompleted === trip.numberOfRounds) {
+        return { winnerId: leaderboard[0].playerId, playerName: leaderboard[0].playerName };
+      }
+      break;
+
+    case 'best_net_round':
+      if (prize.roundNumber) {
+        const bestNet = getBestNetForRound(scores, trip.id, prize.roundNumber);
+        if (bestNet) {
+          return { winnerId: bestNet.playerId, playerName: bestNet.playerName };
         }
-        break;
+      }
+      break;
 
-      case 'best_net_round':
-        if (prize.roundNumber) {
-          const bestNet = getBestNetForRound(scores, trip.id, prize.roundNumber);
-          if (bestNet) {
-            winners.set(prize.id, bestNet.playerId);
-          }
-        }
-        break;
+    case 'closest_to_pin':
+      // CTP must be manually awarded
+      break;
+  }
 
-      case 'closest_to_pin':
-        // This needs to be manually awarded as it requires distance measurement
-        break;
-
-      default:
-        break;
-    }
-  });
-
-  return winners;
+  return null;
 }

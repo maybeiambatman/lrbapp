@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
-import { Trophy, DollarSign, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Trophy, DollarSign, TrendingUp, TrendingDown, Minus, Target } from 'lucide-react';
 import { Card } from '../../components/common';
 import { Layout } from '../../components/common/Layout';
 import { useStore } from '../../store/useStore';
-import { calculateLeaderboard, calculatePurse } from '../../utils/leaderboard';
+import { calculateLeaderboard, calculatePurse, getPrizeWinner } from '../../utils/leaderboard';
 
 export function Purse() {
   const { currentTrip, currentUser, scores } = useStore();
@@ -108,7 +108,10 @@ export function Purse() {
         <Card title="Prizes">
           <div className="divide-y">
             {currentTrip.prizes.map((prize) => {
-              const winner = currentTrip.players.find((p) => p.id === prize.winnerId);
+              const winner = getPrizeWinner(prize, currentTrip, scores, leaderboard);
+              const isCTP = prize.type === 'closest_to_pin';
+              const isAutoCalculated = winner && !prize.winnerId;
+
               return (
                 <div key={prize.id} className="py-4 flex items-center justify-between">
                   <div className="flex items-center gap-4">
@@ -117,27 +120,43 @@ export function Purse() {
                         winner ? 'bg-yellow-100' : 'bg-gray-100'
                       }`}
                     >
-                      <Trophy
-                        className={`h-5 w-5 ${
-                          winner ? 'text-yellow-600' : 'text-gray-400'
-                        }`}
-                      />
+                      {isCTP ? (
+                        <Target
+                          className={`h-5 w-5 ${
+                            winner ? 'text-orange-600' : 'text-gray-400'
+                          }`}
+                        />
+                      ) : (
+                        <Trophy
+                          className={`h-5 w-5 ${
+                            winner ? 'text-yellow-600' : 'text-gray-400'
+                          }`}
+                        />
+                      )}
                     </div>
                     <div>
                       <div className="font-medium text-gray-900">{prize.name}</div>
-                      {prize.roundNumber && (
-                        <div className="text-sm text-gray-500">
-                          Round {prize.roundNumber}
-                        </div>
-                      )}
+                      <div className="flex gap-2 text-sm text-gray-500">
+                        {prize.roundNumber && <span>Round {prize.roundNumber}</span>}
+                        {prize.ctpHole && <span>• Hole {prize.ctpHole}</span>}
+                      </div>
                     </div>
                   </div>
                   <div className="text-right">
                     <div className="font-bold text-green-600">${prize.amount}</div>
                     {winner ? (
-                      <div className="text-sm text-gray-500">{winner.name}</div>
+                      <div className="flex items-center gap-1 justify-end">
+                        <span className="text-sm text-gray-700">{winner.playerName}</span>
+                        {isAutoCalculated && (
+                          <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
+                            Live
+                          </span>
+                        )}
+                      </div>
+                    ) : isCTP ? (
+                      <div className="text-sm text-gray-400">Awaiting admin</div>
                     ) : (
-                      <div className="text-sm text-gray-400">Not awarded</div>
+                      <div className="text-sm text-gray-400">In progress</div>
                     )}
                   </div>
                 </div>

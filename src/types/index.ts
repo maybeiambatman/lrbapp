@@ -46,6 +46,7 @@ export interface Prize {
   name: string;
   type: 'closest_to_pin' | 'best_net_round' | 'best_cumulative_net' | 'custom';
   roundNumber?: number; // For per-round prizes
+  ctpHole?: number; // Which hole is CTP for this prize
   amount: number;
   winnerId?: string;
 }
