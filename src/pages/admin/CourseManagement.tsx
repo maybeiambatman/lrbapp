@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import { Plus, Edit2, Save, X } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Plus, Edit2, Save, X, Upload, Camera, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { Button, Card, Input } from '../../components/common';
 import { Layout } from '../../components/common/Layout';
 import { useStore } from '../../store/useStore';
 import { generateId } from '../../utils/handicap';
+import { parseScorecardImage, type ParsedScorecard } from '../../utils/scorecardParser';
 import type { Course, Hole } from '../../types';
 
 function CourseForm({
@@ -27,10 +28,65 @@ function CourseForm({
     }))
   );
 
+  // Image upload state
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isScanning, setIsScanning] = useState(false);
+  const [scanProgress, setScanProgress] = useState({ status: '', progress: 0 });
+  const [scanResult, setScanResult] = useState<ParsedScorecard | null>(null);
+  const [scanError, setScanError] = useState<string | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+
   const handleHoleChange = (index: number, field: keyof Hole, value: number) => {
     const newHoles = [...holes];
     newHoles[index] = { ...newHoles[index], [field]: value };
     setHoles(newHoles);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Show preview
+    const reader = new FileReader();
+    reader.onload = (ev) => setPreviewImage(ev.target?.result as string);
+    reader.readAsDataURL(file);
+
+    setIsScanning(true);
+    setScanError(null);
+    setScanResult(null);
+
+    try {
+      const result = await parseScorecardImage(file, (progress) => {
+        setScanProgress(progress);
+      });
+
+      setScanResult(result);
+
+      // Apply parsed data to form
+      if (result.courseName && !name) {
+        setName(result.courseName);
+      }
+      if (result.rating) {
+        setRating(result.rating.toString());
+      }
+      if (result.slope) {
+        setSlope(result.slope.toString());
+      }
+
+      // Apply holes data
+      setHoles(result.holes);
+
+    } catch (err) {
+      setScanError('Failed to scan scorecard. Please enter data manually.');
+      console.error('OCR error:', err);
+    } finally {
+      setIsScanning(false);
+    }
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -50,6 +106,99 @@ function CourseForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Scorecard Scanner */}
+      {!course && (
+        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-gray-50">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={handleImageUpload}
+            className="hidden"
+            id="scorecard-upload"
+          />
+
+          {isScanning ? (
+            <div className="text-center">
+              <Loader2 className="h-12 w-12 text-[#006747] mx-auto mb-4 animate-spin" />
+              <p className="font-medium text-gray-900">{scanProgress.status}</p>
+              <div className="mt-3 w-full max-w-xs mx-auto bg-gray-200 rounded-full h-2">
+                <div
+                  className="bg-[#006747] h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${scanProgress.progress}%` }}
+                />
+              </div>
+              <p className="text-sm text-gray-500 mt-2">{scanProgress.progress}% complete</p>
+            </div>
+          ) : scanResult ? (
+            <div className="space-y-4">
+              <div className="flex items-start gap-4">
+                {previewImage && (
+                  <img
+                    src={previewImage}
+                    alt="Scorecard preview"
+                    className="w-32 h-auto rounded-lg border shadow-sm"
+                  />
+                )}
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <CheckCircle2 className="h-5 w-5 text-[#006747]" />
+                    <span className="font-medium text-[#006747]">Scorecard scanned!</span>
+                    <span className="text-sm text-gray-500">
+                      ({Math.round(scanResult.confidence)}% confidence)
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-3">
+                    Review and adjust the values below. OCR may not be perfect for all scorecards.
+                  </p>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Camera className="h-4 w-4 mr-2" />
+                    Scan Another
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <label
+              htmlFor="scorecard-upload"
+              className="cursor-pointer block text-center"
+            >
+              <div className="flex justify-center gap-4 mb-4">
+                <div className="p-3 bg-[#006747]/10 rounded-full">
+                  <Upload className="h-8 w-8 text-[#006747]" />
+                </div>
+                <div className="p-3 bg-[#006747]/10 rounded-full">
+                  <Camera className="h-8 w-8 text-[#006747]" />
+                </div>
+              </div>
+              <p className="font-medium text-gray-900 mb-1">
+                Scan Scorecard Photo
+              </p>
+              <p className="text-sm text-gray-500 mb-4">
+                Upload or take a photo of the scorecard to auto-fill par and handicap values
+              </p>
+              <Button type="button" variant="secondary">
+                <Upload className="h-4 w-4 mr-2" />
+                Choose Image or Take Photo
+              </Button>
+            </label>
+          )}
+
+          {scanError && (
+            <div className="flex items-center gap-2 mt-4 text-red-600">
+              <AlertCircle className="h-5 w-5" />
+              <span className="text-sm">{scanError}</span>
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Input
           label="Course Name"
@@ -245,7 +394,7 @@ export function CourseManagement() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Course Management</h1>
+            <h1 className="text-2xl font-bold text-[#006747]">Course Management</h1>
             <p className="text-gray-500">Add and manage golf course scorecards</p>
           </div>
           {!showForm && (
