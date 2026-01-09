@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Edit2, Users, Clock, Trophy, Copy, Check } from 'lucide-react';
+import { Plus, Edit2, Users, Clock, Trophy, Copy, Check, Trash2, AlertTriangle } from 'lucide-react';
 import { Button, Card, Input, Modal, Select } from '../../components/common';
 import { Layout } from '../../components/common/Layout';
 import { useStore } from '../../store/useStore';
@@ -7,11 +7,15 @@ import { generateId, generateTripCode } from '../../utils/handicap';
 import type { Trip, TripPlayer, TeeTime, Prize, Course } from '../../types';
 
 export function TripManagement() {
-  const { trips, courses, addTrip } = useStore();
+  const { trips, courses, addTrip, deleteTrip } = useStore();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
   const [activeTab, setActiveTab] = useState<'roster' | 'teetimes' | 'prizes'>('roster');
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+
+  // Delete confirmation state
+  const [tripToDelete, setTripToDelete] = useState<Trip | null>(null);
+  const [deleteConfirmation, setDeleteConfirmation] = useState('');
 
   // Create trip form state
   const [tripName, setTripName] = useState('');
@@ -86,12 +90,26 @@ export function TripManagement() {
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
+  const handleDeleteTrip = () => {
+    if (tripToDelete && deleteConfirmation === tripToDelete.name) {
+      deleteTrip(tripToDelete.id);
+      setTripToDelete(null);
+      setDeleteConfirmation('');
+    }
+  };
+
+  const openDeleteModal = (trip: Trip, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setTripToDelete(trip);
+    setDeleteConfirmation('');
+  };
+
   return (
     <Layout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Trip Management</h1>
+            <h1 className="text-2xl font-bold text-[#006747]">Trip Management</h1>
             <p className="text-gray-500">Create and manage golf trips</p>
           </div>
           <Button onClick={() => setShowCreateModal(true)}>
@@ -138,7 +156,7 @@ export function TripManagement() {
                       >
                         {trip.code}
                         {copiedCode === trip.code ? (
-                          <Check className="h-3 w-3 text-green-600" />
+                          <Check className="h-3 w-3 text-[#006747]" />
                         ) : (
                           <Copy className="h-3 w-3 text-gray-400" />
                         )}
@@ -150,10 +168,15 @@ export function TripManagement() {
                       <span>${trip.purseTotal} purse</span>
                     </div>
                   </div>
-                  <Button variant="secondary" onClick={() => setSelectedTrip(trip)}>
-                    <Edit2 className="h-4 w-4 mr-2" />
-                    Manage
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button variant="secondary" onClick={() => setSelectedTrip(trip)}>
+                      <Edit2 className="h-4 w-4 mr-2" />
+                      Manage
+                    </Button>
+                    <Button variant="danger" onClick={(e) => openDeleteModal(trip, e)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </Card>
             ))}
@@ -221,6 +244,63 @@ export function TripManagement() {
             </div>
           </form>
         </Modal>
+
+        {/* Delete Confirmation Modal */}
+        <Modal
+          isOpen={!!tripToDelete}
+          onClose={() => {
+            setTripToDelete(null);
+            setDeleteConfirmation('');
+          }}
+          title="Delete Trip"
+        >
+          <div className="space-y-4">
+            <div className="flex items-start gap-3 p-4 bg-red-50 rounded-lg">
+              <AlertTriangle className="h-6 w-6 text-red-600 flex-shrink-0" />
+              <div>
+                <p className="font-medium text-red-800">
+                  This action cannot be undone
+                </p>
+                <p className="text-sm text-red-600 mt-1">
+                  Deleting this trip will permanently remove all player data, scores, tee times, and prize configurations.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <p className="text-gray-700 mb-2">
+                To confirm deletion, type the trip name:{' '}
+                <span className="font-bold text-gray-900">{tripToDelete?.name}</span>
+              </p>
+              <Input
+                placeholder="Type trip name to confirm"
+                value={deleteConfirmation}
+                onChange={(e) => setDeleteConfirmation(e.target.value)}
+                autoFocus
+              />
+            </div>
+
+            <div className="flex gap-3 justify-end pt-2">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setTripToDelete(null);
+                  setDeleteConfirmation('');
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="danger"
+                onClick={handleDeleteTrip}
+                disabled={deleteConfirmation !== tripToDelete?.name}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Trip
+              </Button>
+            </div>
+          </div>
+        </Modal>
       </div>
     </Layout>
   );
@@ -253,7 +333,7 @@ function TripDetail({
           <p className="text-sm text-gray-500">Code: {trip.code}</p>
         </div>
         <div className="text-right">
-          <p className="text-2xl font-bold text-green-600">${trip.purseTotal}</p>
+          <p className="text-2xl font-bold text-[#006747]">${trip.purseTotal}</p>
           <p className="text-sm text-gray-500">Total Purse</p>
         </div>
       </div>
@@ -264,7 +344,7 @@ function TripDetail({
           onClick={() => setActiveTab('roster')}
           className={`px-4 py-2 font-medium border-b-2 transition-colors ${
             activeTab === 'roster'
-              ? 'border-green-600 text-green-600'
+              ? 'border-[#006747] text-[#006747]'
               : 'border-transparent text-gray-500 hover:text-gray-700'
           }`}
         >
@@ -275,7 +355,7 @@ function TripDetail({
           onClick={() => setActiveTab('teetimes')}
           className={`px-4 py-2 font-medium border-b-2 transition-colors ${
             activeTab === 'teetimes'
-              ? 'border-green-600 text-green-600'
+              ? 'border-[#006747] text-[#006747]'
               : 'border-transparent text-gray-500 hover:text-gray-700'
           }`}
         >
@@ -286,7 +366,7 @@ function TripDetail({
           onClick={() => setActiveTab('prizes')}
           className={`px-4 py-2 font-medium border-b-2 transition-colors ${
             activeTab === 'prizes'
-              ? 'border-green-600 text-green-600'
+              ? 'border-[#006747] text-[#006747]'
               : 'border-transparent text-gray-500 hover:text-gray-700'
           }`}
         >
@@ -521,7 +601,7 @@ function TeeTimesTab({
                       return (
                         <span
                           key={playerId}
-                          className="px-2 py-1 bg-green-100 text-green-800 rounded text-sm"
+                          className="px-2 py-1 bg-[#006747]/20 text-[#006747] rounded text-sm"
                         >
                           {player?.name || 'Unknown'}
                         </span>
@@ -663,7 +743,7 @@ function PrizesTab({
       <div className="space-y-4">
         <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
           <span className="font-medium">Total Purse</span>
-          <span className="text-xl font-bold text-green-600">${trip.purseTotal}</span>
+          <span className="text-xl font-bold text-[#006747]">${trip.purseTotal}</span>
         </div>
 
         <div className="divide-y">
@@ -729,7 +809,7 @@ function PrizesTab({
                 {/* Show current leader for best net round prizes */}
                 {isBestNetRound && currentLeader && (
                   <div className="text-sm text-gray-500 pl-4">
-                    Current leader: <span className="font-medium text-green-600">{currentLeader.playerName}</span>
+                    Current leader: <span className="font-medium text-[#006747]">{currentLeader.playerName}</span>
                     {' '}(Net: {currentLeader.netTotal})
                   </div>
                 )}
@@ -741,7 +821,7 @@ function PrizesTab({
         <div className="flex justify-between items-center pt-4 border-t">
           <div>
             <span className="font-medium">Total Prizes: </span>
-            <span className={totalPrizes > trip.purseTotal ? 'text-red-600' : 'text-green-600'}>
+            <span className={totalPrizes > trip.purseTotal ? 'text-red-600' : 'text-[#006747]'}>
               ${totalPrizes}
             </span>
             {totalPrizes > trip.purseTotal && (

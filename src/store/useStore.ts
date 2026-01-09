@@ -12,6 +12,7 @@ interface AppStore {
   currentTrip: Trip | null;
   addTrip: (trip: Trip) => void;
   updateTrip: (tripId: string, updates: Partial<Trip>) => void;
+  deleteTrip: (tripId: string) => void;
   setCurrentTrip: (trip: Trip | null) => void;
   getTripByCode: (code: string) => Trip | undefined;
 
@@ -69,6 +70,11 @@ export const useStore = create<AppStore>()(
         currentTrip: state.currentTrip?.id === tripId
           ? { ...state.currentTrip, ...updates }
           : state.currentTrip
+      })),
+      deleteTrip: (tripId) => set((state) => ({
+        trips: state.trips.filter((t) => t.id !== tripId),
+        currentTrip: state.currentTrip?.id === tripId ? null : state.currentTrip,
+        scores: state.scores.filter((s) => s.tripId !== tripId)
       })),
       setCurrentTrip: (trip) => set({ currentTrip: trip }),
       getTripByCode: (code) => get().trips.find((t) => t.code.toLowerCase() === code.toLowerCase()),
