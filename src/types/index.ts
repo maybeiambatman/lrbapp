@@ -15,10 +15,21 @@ export interface Hole {
   yards?: number;
 }
 
+export interface Tee {
+  id: string;
+  name: string; // e.g., "Gold", "Green", "White", "Blue"
+  color?: string; // CSS color for display
+  rating: number;
+  slope: number;
+  yardage?: number; // Total yardage from this tee
+}
+
 export interface Course {
   id: string;
   name: string;
   holes: Hole[];
+  tees: Tee[]; // Multiple tees with different ratings
+  // Legacy fields for backwards compatibility
   rating?: number;
   slope?: number;
   createdBy: string;

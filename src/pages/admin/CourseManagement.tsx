@@ -1,11 +1,11 @@
 import { useState, useRef } from 'react';
-import { Plus, Edit2, Save, X, Upload, Camera, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Plus, Edit2, Save, X, Upload, Camera, Loader2, AlertCircle, CheckCircle2, Trash2 } from 'lucide-react';
 import { Button, Card, Input } from '../../components/common';
 import { Layout } from '../../components/common/Layout';
 import { useStore } from '../../store/useStore';
 import { generateId } from '../../utils/handicap';
-import { parseScorecardImage, type ParsedScorecard } from '../../utils/scorecardParser';
-import type { Course, Hole } from '../../types';
+import { parseScorecardImage, convertParsedTees, type ParsedScorecard } from '../../utils/scorecardParser';
+import type { Course, Hole, Tee } from '../../types';
 
 function CourseForm({
   course,
@@ -17,8 +17,15 @@ function CourseForm({
   onCancel: () => void;
 }) {
   const [name, setName] = useState(course?.name || '');
-  const [rating, setRating] = useState(course?.rating?.toString() || '72');
-  const [slope, setSlope] = useState(course?.slope?.toString() || '113');
+  const [tees, setTees] = useState<Tee[]>(
+    course?.tees?.length ? course.tees : [{
+      id: generateId(),
+      name: 'White',
+      color: '#f5f5f5',
+      rating: 72,
+      slope: 113,
+    }]
+  );
   const [holes, setHoles] = useState<Hole[]>(
     course?.holes || Array.from({ length: 18 }, (_, i) => ({
       number: i + 1,
@@ -66,11 +73,10 @@ function CourseForm({
       if (result.courseName && !name) {
         setName(result.courseName);
       }
-      if (result.rating) {
-        setRating(result.rating.toString());
-      }
-      if (result.slope) {
-        setSlope(result.slope.toString());
+
+      // Apply tees data (convert parsed tees to Tee type with IDs)
+      if (result.tees.length > 0) {
+        setTees(convertParsedTees(result.tees));
       }
 
       // Apply holes data
@@ -89,13 +95,37 @@ function CourseForm({
     }
   };
 
+  const handleTeeChange = (teeId: string, field: keyof Tee, value: string | number) => {
+    setTees(tees.map(t =>
+      t.id === teeId ? { ...t, [field]: value } : t
+    ));
+  };
+
+  const addTee = () => {
+    setTees([...tees, {
+      id: generateId(),
+      name: '',
+      rating: 70,
+      slope: 113,
+    }]);
+  };
+
+  const removeTee = (teeId: string) => {
+    if (tees.length > 1) {
+      setTees(tees.filter(t => t.id !== teeId));
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Use first tee's rating/slope as legacy values for backwards compatibility
+    const primaryTee = tees[0];
     onSave({
       id: course?.id || generateId(),
       name,
-      rating: parseFloat(rating),
-      slope: parseInt(slope),
+      tees,
+      rating: primaryTee?.rating,
+      slope: primaryTee?.slope,
       holes,
       createdBy: course?.createdBy || 'admin',
       createdAt: course?.createdAt || Date.now(),
@@ -199,26 +229,96 @@ function CourseForm({
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Input
-          label="Course Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-        />
-        <Input
-          label="Course Rating"
-          type="number"
-          step="0.1"
-          value={rating}
-          onChange={(e) => setRating(e.target.value)}
-        />
-        <Input
-          label="Slope Rating"
-          type="number"
-          value={slope}
-          onChange={(e) => setSlope(e.target.value)}
-        />
+      <Input
+        label="Course Name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        required
+      />
+
+      {/* Tees Section */}
+      <div className="bg-gray-50 rounded-lg p-4">
+        <div className="flex justify-between items-center mb-4">
+          <div>
+            <h3 className="font-semibold">Tees & Ratings</h3>
+            <p className="text-sm text-gray-500">Add each tee with its course rating and slope</p>
+          </div>
+          <Button type="button" variant="secondary" size="sm" onClick={addTee}>
+            <Plus className="h-4 w-4 mr-1" />
+            Add Tee
+          </Button>
+        </div>
+
+        <div className="space-y-3">
+          {tees.map((tee) => (
+            <div key={tee.id} className="flex items-center gap-3 p-3 bg-white rounded-lg border">
+              {/* Color indicator */}
+              <div
+                className="w-6 h-6 rounded-full border-2 border-gray-300 flex-shrink-0"
+                style={{ backgroundColor: tee.color || '#9ca3af' }}
+              />
+
+              {/* Tee Name */}
+              <div className="flex-1 min-w-0">
+                <input
+                  type="text"
+                  placeholder="Tee name (e.g., Gold, Blue)"
+                  value={tee.name}
+                  onChange={(e) => handleTeeChange(tee.id, 'name', e.target.value)}
+                  className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-[#006747] focus:border-transparent"
+                />
+              </div>
+
+              {/* Rating */}
+              <div className="w-24">
+                <label className="text-xs text-gray-500 mb-1 block">Rating</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  min="60"
+                  max="80"
+                  value={tee.rating}
+                  onChange={(e) => handleTeeChange(tee.id, 'rating', parseFloat(e.target.value) || 70)}
+                  className="w-full px-2 py-2 border rounded-lg text-sm text-center focus:ring-2 focus:ring-[#006747] focus:border-transparent"
+                />
+              </div>
+
+              {/* Slope */}
+              <div className="w-20">
+                <label className="text-xs text-gray-500 mb-1 block">Slope</label>
+                <input
+                  type="number"
+                  min="55"
+                  max="155"
+                  value={tee.slope}
+                  onChange={(e) => handleTeeChange(tee.id, 'slope', parseInt(e.target.value) || 113)}
+                  className="w-full px-2 py-2 border rounded-lg text-sm text-center focus:ring-2 focus:ring-[#006747] focus:border-transparent"
+                />
+              </div>
+
+              {/* Remove Button */}
+              <button
+                type="button"
+                onClick={() => removeTee(tee.id)}
+                disabled={tees.length <= 1}
+                className={`p-2 rounded-lg transition-colors ${
+                  tees.length <= 1
+                    ? 'text-gray-300 cursor-not-allowed'
+                    : 'text-red-500 hover:bg-red-50'
+                }`}
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {scanResult && scanResult.tees.length > 0 && (
+          <div className="mt-3 text-sm text-[#006747] flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4" />
+            <span>Found {scanResult.tees.length} tee{scanResult.tees.length > 1 ? 's' : ''} from scorecard scan</span>
+          </div>
+        )}
       </div>
 
       <div className="bg-gray-50 rounded-lg p-4">
@@ -436,14 +536,30 @@ export function CourseManagement() {
             {courses.map((course) => (
               <Card key={course.id}>
                 <div className="flex items-center justify-between">
-                  <div>
+                  <div className="flex-1">
                     <h3 className="text-lg font-semibold text-gray-900">
                       {course.name}
                     </h3>
-                    <div className="flex gap-4 text-sm text-gray-500 mt-1">
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500 mt-1">
                       <span>Par: {course.holes.reduce((s, h) => s + h.par, 0)}</span>
-                      {course.rating && <span>Rating: {course.rating}</span>}
-                      {course.slope && <span>Slope: {course.slope}</span>}
+                      {course.tees && course.tees.length > 0 ? (
+                        <span className="flex items-center gap-2">
+                          {course.tees.map((tee) => (
+                            <span key={tee.id} className="inline-flex items-center gap-1">
+                              <span
+                                className="w-3 h-3 rounded-full border"
+                                style={{ backgroundColor: tee.color || '#9ca3af' }}
+                              />
+                              <span>{tee.name}: {tee.rating}/{tee.slope}</span>
+                            </span>
+                          ))}
+                        </span>
+                      ) : (
+                        <>
+                          {course.rating && <span>Rating: {course.rating}</span>}
+                          {course.slope && <span>Slope: {course.slope}</span>}
+                        </>
+                      )}
                     </div>
                   </div>
                   <div className="flex gap-2">

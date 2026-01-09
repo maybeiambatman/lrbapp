@@ -1,10 +1,18 @@
 import Tesseract from 'tesseract.js';
-import type { Hole } from '../types';
+import type { Hole, Tee } from '../types';
+import { generateId } from './handicap';
+
+export interface ParsedTee {
+  name: string;
+  color?: string;
+  rating: number;
+  slope: number;
+  yardage?: number;
+}
 
 export interface ParsedScorecard {
   courseName?: string;
-  rating?: number;
-  slope?: number;
+  tees: ParsedTee[];
   holes: Hole[];
   confidence: number;
   rawText: string;
@@ -14,6 +22,22 @@ interface ParseProgress {
   status: string;
   progress: number;
 }
+
+// Common tee colors and their CSS values
+const TEE_COLORS: Record<string, string> = {
+  gold: '#d4af37',
+  championship: '#d4af37',
+  black: '#1a1a1a',
+  blue: '#1e40af',
+  white: '#f5f5f5',
+  green: '#16a34a',
+  red: '#dc2626',
+  orange: '#f97316',
+  yellow: '#eab308',
+  silver: '#9ca3af',
+  'gr/wh': '#22c55e',
+  'green/white': '#22c55e',
+};
 
 /**
  * Parse a golf scorecard image using OCR
@@ -78,19 +102,8 @@ function parseOcrText(text: string): Omit<ParsedScorecard, 'confidence' | 'rawTe
     }
   }
 
-  // Try to find course rating and slope
-  let rating: number | undefined;
-  let slope: number | undefined;
-
-  const ratingMatch = text.match(/rating[:\s]+(\d+\.?\d*)/i);
-  if (ratingMatch) {
-    rating = parseFloat(ratingMatch[1]);
-  }
-
-  const slopeMatch = text.match(/slope[:\s]+(\d+)/i);
-  if (slopeMatch) {
-    slope = parseInt(slopeMatch[1]);
-  }
+  // Extract tee information (multiple tees with ratings/slopes)
+  const tees = extractTees(text, lines);
 
   // Initialize holes with defaults
   const holes: Hole[] = Array.from({ length: 18 }, (_, i) => ({
@@ -111,7 +124,7 @@ function parseOcrText(text: string): Omit<ParsedScorecard, 'confidence' | 'rawTe
   }
 
   // Try to find handicap rankings
-  const handicapValues = extractHandicapValues(text, lines);
+  const handicapValues = extractHandicapValues(lines);
   if (handicapValues.length >= 9) {
     handicapValues.forEach((hcp, i) => {
       if (i < 18 && hcp >= 1 && hcp <= 18) {
@@ -122,10 +135,96 @@ function parseOcrText(text: string): Omit<ParsedScorecard, 'confidence' | 'rawTe
 
   return {
     courseName,
-    rating,
-    slope,
+    tees,
     holes,
   };
+}
+
+/**
+ * Extract tee information from OCR text
+ */
+function extractTees(text: string, lines: string[]): ParsedTee[] {
+  const tees: ParsedTee[] = [];
+  const foundTees = new Set<string>();
+
+  // Common tee name patterns
+  const teeNames = ['gold', 'blue', 'white', 'red', 'green', 'black', 'orange', 'yellow', 'silver', 'championship', 'gr/wh', 'green/white'];
+
+  // Pattern 1: "TeeName Rating/Slope" format (e.g., "Gold 73.3/137")
+  // Pattern 2: "Men TeeName Rating/Slope" format
+  // Pattern 3: Table format with rating and slope columns
+
+  for (const line of lines) {
+    const lowerLine = line.toLowerCase();
+
+    for (const teeName of teeNames) {
+      if (lowerLine.includes(teeName) && !foundTees.has(teeName)) {
+        // Try to extract rating/slope from this line
+        // Look for pattern like "73.3/137" or "73.3 137" or rating followed by slope
+        const ratingPattern = /(\d{2}\.\d)[\s/]+(\d{2,3})/g;
+        const matches = [...line.matchAll(ratingPattern)];
+
+        if (matches.length > 0) {
+          // First match is typically men's rating/slope
+          const [, rating, slope] = matches[0];
+          const parsedRating = parseFloat(rating);
+          const parsedSlope = parseInt(slope);
+
+          // Validate reasonable values
+          if (parsedRating >= 60 && parsedRating <= 80 && parsedSlope >= 55 && parsedSlope <= 155) {
+            foundTees.add(teeName);
+            tees.push({
+              name: teeName.charAt(0).toUpperCase() + teeName.slice(1),
+              color: TEE_COLORS[teeName],
+              rating: parsedRating,
+              slope: parsedSlope,
+            });
+          }
+        }
+      }
+    }
+  }
+
+  // Pattern 4: Look for "Course Ratings" section with tabular data
+  if (tees.length === 0) {
+    // Try to find rating/slope patterns with nearby tee names
+    const ratingMatches = text.match(/(\d{2}\.\d)[\s/]+(\d{2,3})/g);
+    if (ratingMatches) {
+      for (const match of ratingMatches) {
+        const parts = match.match(/(\d{2}\.\d)[\s/]+(\d{2,3})/);
+        if (parts) {
+          const rating = parseFloat(parts[1]);
+          const slope = parseInt(parts[2]);
+
+          // Only add if it looks like a valid rating/slope
+          if (rating >= 60 && rating <= 80 && slope >= 55 && slope <= 155) {
+            // Check if we already have a similar rating
+            const isDuplicate = tees.some(t => Math.abs(t.rating - rating) < 0.5 && Math.abs(t.slope - slope) < 3);
+            if (!isDuplicate && tees.length < 6) {
+              // Try to guess tee name based on rating (higher rating = back tees)
+              let teeName = `Tee ${tees.length + 1}`;
+              if (tees.length === 0 && rating > 72) teeName = 'Back';
+              else if (tees.length === 0) teeName = 'White';
+              else if (rating > 72) teeName = 'Championship';
+              else if (rating > 70) teeName = 'Blue';
+              else teeName = 'Forward';
+
+              tees.push({
+                name: teeName,
+                rating,
+                slope,
+              });
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Sort tees by rating (highest first - back tees)
+  tees.sort((a, b) => b.rating - a.rating);
+
+  return tees;
 }
 
 /**
@@ -177,7 +276,7 @@ function extractParValues(text: string, lines: string[]): number[] {
 /**
  * Extract handicap ranking values from OCR text
  */
-function extractHandicapValues(_text: string, lines: string[]): number[] {
+function extractHandicapValues(lines: string[]): number[] {
   const handicapValues: number[] = [];
 
   // Look for lines containing "HCP", "HDCP", or "HANDICAP"
@@ -227,4 +326,18 @@ function extractHandicapValues(_text: string, lines: string[]): number[] {
   }
 
   return handicapValues;
+}
+
+/**
+ * Convert parsed tees to Tee type with IDs
+ */
+export function convertParsedTees(parsedTees: ParsedTee[]): Tee[] {
+  return parsedTees.map((t) => ({
+    id: generateId(),
+    name: t.name,
+    color: t.color,
+    rating: t.rating,
+    slope: t.slope,
+    yardage: t.yardage,
+  }));
 }
