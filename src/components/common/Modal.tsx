@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
-import { Button } from './Button';
 
 interface ModalProps {
   isOpen: boolean;
@@ -48,19 +47,17 @@ export function Modal({
 
         {/* Modal */}
         <div
-          className={`relative bg-white rounded-xl shadow-xl w-full ${sizeStyles[size]} transform transition-all`}
+          className={`relative bg-[#faf9f6] rounded-xl shadow-xl w-full ${sizeStyles[size]} transform transition-all overflow-hidden`}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
-            <Button
-              variant="ghost"
-              size="sm"
+          <div className="flex items-center justify-between px-4 py-3 bg-[#006747] border-b-2 border-[#d4af37]">
+            <h2 className="text-lg font-semibold text-white font-['Playfair_Display',Georgia,serif]">{title}</h2>
+            <button
               onClick={onClose}
-              className="p-1"
+              className="p-1 text-white/80 hover:text-white transition-colors"
             >
               <X className="h-5 w-5" />
-            </Button>
+            </button>
           </div>
 
           {/* Content */}

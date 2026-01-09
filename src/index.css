@@ -1,14 +1,77 @@
 @import "tailwindcss";
 
+/* Masters Tournament Color Palette */
 :root {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* Masters Green - Augusta National */
+  --masters-green: #006747;
+  --masters-green-dark: #004d35;
+  --masters-green-light: #008558;
+
+  /* Masters Gold/Yellow */
+  --masters-gold: #d4af37;
+  --masters-gold-light: #f4d03f;
+  --masters-gold-dark: #b8960c;
+
+  /* Cream/Off-white backgrounds */
+  --masters-cream: #faf9f6;
+  --masters-ivory: #fffff0;
+
+  /* Typography */
+  font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
+  background-color: var(--masters-cream);
+  color: #1a1a1a;
 }
 
 #root {
   min-height: 100vh;
+}
+
+/* Headings use Playfair Display */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* Custom Tailwind theme extensions via CSS */
+@theme {
+  --color-masters-green: #006747;
+  --color-masters-green-dark: #004d35;
+  --color-masters-green-light: #008558;
+  --color-masters-gold: #d4af37;
+  --color-masters-gold-light: #f4d03f;
+  --color-masters-cream: #faf9f6;
+  --color-masters-ivory: #fffff0;
+}
+
+/* Elegant button transitions */
+button {
+  transition: all 0.2s ease;
+}
+
+/* Gold gradient for special elements */
+.masters-gold-gradient {
+  background: linear-gradient(135deg, var(--masters-gold-light) 0%, var(--masters-gold) 50%, var(--masters-gold-dark) 100%);
+}
+
+/* Green gradient for headers */
+.masters-green-gradient {
+  background: linear-gradient(135deg, var(--masters-green-light) 0%, var(--masters-green) 50%, var(--masters-green-dark) 100%);
+}
+
+/* Subtle paper texture effect for cards */
+.masters-card {
+  background: linear-gradient(180deg, #ffffff 0%, var(--masters-cream) 100%);
+  box-shadow: 0 1px 3px rgba(0, 103, 71, 0.1), 0 1px 2px rgba(0, 103, 71, 0.06);
+}
+
+/* Selection color */
+::selection {
+  background-color: var(--masters-gold);
+  color: var(--masters-green-dark);
 }

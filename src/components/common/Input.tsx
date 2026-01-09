@@ -30,7 +30,8 @@ export function Input({
         id={inputId}
         className={`
           w-full px-3 py-2 border rounded-lg shadow-sm
-          focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500
+          bg-white
+          focus:outline-none focus:ring-2 focus:ring-[#006747] focus:border-[#006747]
           disabled:bg-gray-100 disabled:cursor-not-allowed
           ${error ? 'border-red-500' : 'border-gray-300'}
           ${className}

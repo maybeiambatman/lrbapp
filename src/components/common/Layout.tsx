@@ -45,30 +45,38 @@ export function Layout({ children }: LayoutProps) {
     : [];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#faf9f6]">
       {/* Header */}
-      <header className="bg-green-700 text-white shadow-lg">
+      <header className="bg-[#006747] text-white shadow-lg">
+        {/* Gold accent line */}
+        <div className="h-1 bg-gradient-to-r from-[#b8960c] via-[#d4af37] to-[#b8960c]" />
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2">
-              <Trophy className="h-8 w-8" />
-              <span className="text-xl font-bold">Golf Trip Manager</span>
+            <Link to="/" className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-[#d4af37] flex items-center justify-center">
+                <Trophy className="h-6 w-6 text-[#004d35]" />
+              </div>
+              <div>
+                <span className="text-xl font-bold font-['Playfair_Display'] tracking-wide">Golf Trip</span>
+                <span className="hidden sm:inline text-xl font-bold font-['Playfair_Display'] tracking-wide"> Manager</span>
+              </div>
             </Link>
 
             {/* Desktop Nav */}
-            <nav className="hidden md:flex items-center gap-4">
+            <nav className="hidden md:flex items-center gap-1">
               {navItems.map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
+                  className={`flex items-center gap-2 px-4 py-2 rounded transition-all duration-200 font-medium ${
                     location.pathname === item.path
-                      ? 'bg-green-800 text-white'
-                      : 'text-green-100 hover:bg-green-600'
+                      ? 'bg-[#004d35] text-[#d4af37]'
+                      : 'text-white/90 hover:bg-[#004d35] hover:text-white'
                   }`}
                 >
-                  <item.icon className="h-5 w-5" />
+                  <item.icon className="h-4 w-4" />
                   <span>{item.label}</span>
                 </Link>
               ))}
@@ -78,17 +86,21 @@ export function Layout({ children }: LayoutProps) {
             <div className="hidden md:flex items-center gap-4">
               {currentUser && (
                 <>
-                  <span className="text-sm text-green-100">
+                  <span className="text-sm text-white/80 font-medium">
                     {currentUser.name}
-                    {currentUser.isAdmin && ' (Admin)'}
+                    {currentUser.isAdmin && (
+                      <span className="ml-2 px-2 py-0.5 bg-[#d4af37] text-[#004d35] text-xs rounded font-semibold">
+                        Admin
+                      </span>
+                    )}
                   </span>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={handleLogout}
-                    className="text-white hover:bg-green-600"
+                    className="text-white/80 hover:text-white hover:bg-[#004d35]"
                   >
-                    <LogOut className="h-5 w-5" />
+                    <LogOut className="h-4 w-4" />
                   </Button>
                 </>
               )}
@@ -96,7 +108,7 @@ export function Layout({ children }: LayoutProps) {
 
             {/* Mobile menu button */}
             <button
-              className="md:hidden p-2 rounded-lg hover:bg-green-600"
+              className="md:hidden p-2 rounded hover:bg-[#004d35] transition-colors"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
               {mobileMenuOpen ? (
@@ -110,17 +122,17 @@ export function Layout({ children }: LayoutProps) {
 
         {/* Mobile Nav */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-green-600">
+          <div className="md:hidden border-t border-[#004d35]">
             <div className="px-4 py-3 space-y-1">
               {navItems.map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
+                  className={`flex items-center gap-2 px-4 py-3 rounded transition-colors ${
                     location.pathname === item.path
-                      ? 'bg-green-800 text-white'
-                      : 'text-green-100 hover:bg-green-600'
+                      ? 'bg-[#004d35] text-[#d4af37]'
+                      : 'text-white/90 hover:bg-[#004d35]'
                   }`}
                 >
                   <item.icon className="h-5 w-5" />
@@ -130,7 +142,7 @@ export function Layout({ children }: LayoutProps) {
               {currentUser && (
                 <button
                   onClick={handleLogout}
-                  className="flex items-center gap-2 w-full px-3 py-2 text-green-100 hover:bg-green-600 rounded-lg"
+                  className="flex items-center gap-2 w-full px-4 py-3 text-white/90 hover:bg-[#004d35] rounded transition-colors"
                 >
                   <LogOut className="h-5 w-5" />
                   <span>Logout</span>
@@ -142,9 +154,18 @@ export function Layout({ children }: LayoutProps) {
       </header>
 
       {/* Main content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {children}
       </main>
+
+      {/* Footer */}
+      <footer className="border-t border-[#006747]/10 bg-white mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <p className="text-center text-sm text-[#006747]/60 font-medium">
+            A Tradition Unlike Any Other
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }

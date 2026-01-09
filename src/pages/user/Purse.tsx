@@ -38,7 +38,7 @@ export function Purse() {
     <Layout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Purse & Winnings</h1>
+          <h1 className="text-2xl font-bold text-[#006747]">Purse & Winnings</h1>
           <p className="text-gray-500">{currentTrip.name}</p>
         </div>
 
@@ -46,21 +46,21 @@ export function Purse() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card>
             <div className="text-center">
-              <DollarSign className="h-8 w-8 text-green-600 mx-auto mb-2" />
+              <DollarSign className="h-8 w-8 text-[#006747] mx-auto mb-2" />
               <p className="text-sm text-gray-500">Total Purse</p>
-              <p className="text-2xl font-bold text-gray-900">${currentTrip.purseTotal}</p>
+              <p className="text-2xl font-bold text-[#006747]">${currentTrip.purseTotal}</p>
             </div>
           </Card>
           <Card>
             <div className="text-center">
-              <Trophy className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
+              <Trophy className="h-8 w-8 text-[#d4af37] mx-auto mb-2" />
               <p className="text-sm text-gray-500">Prizes Awarded</p>
               <p className="text-2xl font-bold text-gray-900">${totalPrizesPaid}</p>
             </div>
           </Card>
           <Card>
             <div className="text-center">
-              <DollarSign className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+              <DollarSign className="h-8 w-8 text-[#006747] mx-auto mb-2" />
               <p className="text-sm text-gray-500">Remaining</p>
               <p className="text-2xl font-bold text-gray-900">${remainingPurse}</p>
             </div>
@@ -72,7 +72,7 @@ export function Purse() {
                   currentPlayerEntry?.netPosition === 0
                     ? 'text-gray-400'
                     : currentPlayerEntry?.netPosition && currentPlayerEntry.netPosition > 0
-                    ? 'text-green-600'
+                    ? 'text-[#006747]'
                     : 'text-red-600'
                 }`}
               >
@@ -90,7 +90,7 @@ export function Purse() {
                   currentPlayerEntry?.netPosition === 0
                     ? 'text-gray-400'
                     : currentPlayerEntry?.netPosition && currentPlayerEntry.netPosition > 0
-                    ? 'text-green-600'
+                    ? 'text-[#006747]'
                     : 'text-red-600'
                 }`}
               >
@@ -143,7 +143,7 @@ export function Purse() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-bold text-green-600">${prize.amount}</div>
+                    <div className="font-bold text-[#006747]">${prize.amount}</div>
                     {winner ? (
                       <div className="flex items-center gap-1 justify-end">
                         <span className="text-sm text-gray-700">{winner.playerName}</span>
@@ -188,14 +188,14 @@ export function Purse() {
                     <tr
                       key={entry.playerId}
                       className={`border-b last:border-0 ${
-                        isCurrentUser ? 'bg-green-50' : ''
+                        isCurrentUser ? 'bg-[#006747]/5' : ''
                       }`}
                     >
                       <td className="py-4">
                         <div className="flex items-center gap-2">
                           <span className="font-medium">{entry.playerName}</span>
                           {isCurrentUser && (
-                            <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">
+                            <span className="text-xs bg-[#006747]/20 text-[#006747] px-2 py-0.5 rounded">
                               You
                             </span>
                           )}
@@ -205,7 +205,7 @@ export function Purse() {
                             {entry.prizes.map((prize, i) => (
                               <span
                                 key={i}
-                                className="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded"
+                                className="text-xs bg-[#d4af37]/20 text-[#b8960c] px-2 py-0.5 rounded"
                               >
                                 {prize.prizeName}
                               </span>
@@ -216,7 +216,7 @@ export function Purse() {
                       <td className="py-4 text-center text-red-600">
                         -${player?.buyIn || 0}
                       </td>
-                      <td className="py-4 text-center text-green-600">
+                      <td className="py-4 text-center text-[#006747]">
                         +${entry.totalWinnings}
                       </td>
                       <td
@@ -224,7 +224,7 @@ export function Purse() {
                           entry.netPosition === 0
                             ? 'text-gray-400'
                             : entry.netPosition > 0
-                            ? 'text-green-600'
+                            ? 'text-[#006747]'
                             : 'text-red-600'
                         }`}
                       >
@@ -255,28 +255,28 @@ export function Purse() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+            <div className="flex items-center justify-between p-4 bg-[#006747]/10 rounded-lg">
               <div>
-                <div className="font-medium text-green-800">Total Prizes</div>
-                <div className="text-sm text-green-600">
+                <div className="font-medium text-[#006747]">Total Prizes</div>
+                <div className="text-sm text-[#006747]/80">
                   {currentTrip.prizes.length} prizes configured
                 </div>
               </div>
-              <div className="text-xl font-bold text-green-700">
+              <div className="text-xl font-bold text-[#006747]">
                 ${currentTrip.prizes.reduce((sum, p) => sum + p.amount, 0)}
               </div>
             </div>
 
             {currentTrip.prizes.reduce((sum, p) => sum + p.amount, 0) !==
               currentTrip.purseTotal && (
-              <div className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg">
+              <div className="flex items-center justify-between p-4 bg-[#d4af37]/20 rounded-lg">
                 <div>
-                  <div className="font-medium text-yellow-800">Unallocated</div>
-                  <div className="text-sm text-yellow-600">
+                  <div className="font-medium text-[#b8960c]">Unallocated</div>
+                  <div className="text-sm text-[#b8960c]/80">
                     Purse minus prizes
                   </div>
                 </div>
-                <div className="text-xl font-bold text-yellow-700">
+                <div className="text-xl font-bold text-[#b8960c]">
                   $
                   {currentTrip.purseTotal -
                     currentTrip.prizes.reduce((sum, p) => sum + p.amount, 0)}

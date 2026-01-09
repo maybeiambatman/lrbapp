@@ -67,20 +67,20 @@ export function Leaderboard() {
   const getPositionStyle = (position: number) => {
     switch (position) {
       case 1:
-        return 'bg-yellow-100 border-yellow-400';
+        return 'bg-gradient-to-r from-[#f4d03f]/20 to-[#d4af37]/20 border-[#d4af37]';
       case 2:
         return 'bg-gray-100 border-gray-400';
       case 3:
         return 'bg-orange-100 border-orange-400';
       default:
-        return 'bg-white border-gray-200';
+        return 'bg-[#faf9f6] border-gray-200';
     }
   };
 
   const getPositionIcon = (position: number) => {
     switch (position) {
       case 1:
-        return <Trophy className="h-5 w-5 text-yellow-500" />;
+        return <Trophy className="h-5 w-5 text-[#d4af37]" />;
       case 2:
         return <Medal className="h-5 w-5 text-gray-400" />;
       case 3:
@@ -95,7 +95,7 @@ export function Leaderboard() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Leaderboard</h1>
+            <h1 className="text-2xl font-bold text-[#006747]">Leaderboard</h1>
             <p className="text-gray-500">{currentTrip.name}</p>
           </div>
           <Select
@@ -124,7 +124,7 @@ export function Leaderboard() {
           <Card>
             <div className="text-center">
               <p className="text-sm text-gray-500">Best Net</p>
-              <p className="text-lg font-bold text-green-600">
+              <p className="text-lg font-bold text-[#006747]">
                 {filteredLeaderboard[0]
                   ? formatScoreToPar(
                       filteredLeaderboard[0].totalNet,
@@ -147,7 +147,7 @@ export function Leaderboard() {
               <p className="text-sm text-gray-500">
                 {selectedRound === 'all' ? 'Total Purse' : 'Round Prize'}
               </p>
-              <p className="text-lg font-bold text-green-600">
+              <p className="text-lg font-bold text-[#006747]">
                 ${currentTrip.purseTotal}
               </p>
             </div>
@@ -206,7 +206,7 @@ export function Leaderboard() {
                         </div>
                         <div className="text-center">
                           <div className="text-xs text-gray-500">Net</div>
-                          <div className="font-bold text-green-600 text-lg">
+                          <div className="font-bold text-[#006747] text-lg">
                             {entry.totalNet || '-'}
                           </div>
                         </div>
@@ -245,7 +245,7 @@ export function Leaderboard() {
                                   </div>
                                   <div>
                                     <div className="text-xs text-gray-500">Net</div>
-                                    <div className="font-bold text-green-600">
+                                    <div className="font-bold text-[#006747]">
                                       {round.netScore}
                                     </div>
                                   </div>
@@ -289,14 +289,14 @@ export function Leaderboard() {
                         <p className="text-sm text-gray-500">{course?.name || 'TBD'}</p>
                       </div>
                       {bestNet && (
-                        <Trophy className="h-5 w-5 text-yellow-500" />
+                        <Trophy className="h-5 w-5 text-[#d4af37]" />
                       )}
                     </div>
                     {bestNet ? (
                       <div className="flex justify-between items-center mt-3">
                         <span className="font-medium">{bestNet.playerName}</span>
                         <div className="text-right">
-                          <span className="text-green-600 font-bold">
+                          <span className="text-[#006747] font-bold">
                             Net: {bestNet.netTotal}
                           </span>
                           <span className="text-gray-400 text-sm ml-2">

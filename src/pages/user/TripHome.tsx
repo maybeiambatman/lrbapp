@@ -36,17 +36,20 @@ export function TripHome() {
     <Layout>
       <div className="space-y-6">
         {/* Welcome Header */}
-        <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-xl p-6 text-white">
-          <h1 className="text-2xl font-bold mb-2">Welcome, {currentUser.name}!</h1>
-          <p className="text-green-100">{currentTrip.name}</p>
-          <div className="flex gap-6 mt-4 text-sm">
-            <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              <span>{currentTrip.startDate} - {currentTrip.endDate}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              <span>{currentTrip.players.length} players</span>
+        <div className="relative bg-gradient-to-r from-[#006747] to-[#004d35] rounded-xl p-6 text-white overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#d4af37]/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+          <div className="relative">
+            <h1 className="text-2xl font-bold mb-2 font-['Playfair_Display',Georgia,serif]">Welcome, {currentUser.name}!</h1>
+            <p className="text-green-100">{currentTrip.name}</p>
+            <div className="flex gap-6 mt-4 text-sm">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-[#d4af37]" />
+                <span>{currentTrip.startDate} - {currentTrip.endDate}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-[#d4af37]" />
+                <span>{currentTrip.players.length} players</span>
+              </div>
             </div>
           </div>
         </div>
@@ -69,7 +72,7 @@ export function TripHome() {
           </Card>
           <Card>
             <div className="text-center">
-              <p className="text-3xl font-bold text-green-600">${currentTrip.purseTotal}</p>
+              <p className="text-3xl font-bold text-[#006747]">${currentTrip.purseTotal}</p>
               <p className="text-sm text-gray-500">Total Purse</p>
             </div>
           </Card>
@@ -86,8 +89,8 @@ export function TripHome() {
           <Link to="/trip/scores">
             <Card className="hover:shadow-md transition-shadow cursor-pointer">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-green-100 rounded-lg">
-                  <Flag className="h-6 w-6 text-green-600" />
+                <div className="p-3 bg-[#006747]/10 rounded-lg">
+                  <Flag className="h-6 w-6 text-[#006747]" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900">Enter Scores</h3>
@@ -100,8 +103,8 @@ export function TripHome() {
           <Link to="/trip/leaderboard">
             <Card className="hover:shadow-md transition-shadow cursor-pointer">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-blue-100 rounded-lg">
-                  <Trophy className="h-6 w-6 text-blue-600" />
+                <div className="p-3 bg-[#d4af37]/20 rounded-lg">
+                  <Trophy className="h-6 w-6 text-[#d4af37]" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900">Leaderboard</h3>
@@ -114,8 +117,8 @@ export function TripHome() {
           <Link to="/trip/purse">
             <Card className="hover:shadow-md transition-shadow cursor-pointer">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-yellow-100 rounded-lg">
-                  <span className="text-2xl">$</span>
+                <div className="p-3 bg-[#006747]/10 rounded-lg">
+                  <span className="text-2xl text-[#006747]">$</span>
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900">Purse</h3>
@@ -167,7 +170,7 @@ export function TripHome() {
                               key={i}
                               className={`text-xs px-2 py-0.5 rounded ${
                                 name === currentUser.name
-                                  ? 'bg-green-100 text-green-800'
+                                  ? 'bg-[#006747]/20 text-[#006747]'
                                   : 'bg-gray-200 text-gray-700'
                               }`}
                             >
@@ -211,15 +214,15 @@ export function TripHome() {
                             {course?.name || 'Unknown'}
                           </td>
                           <td className="py-3 text-center">{score.grossTotal}</td>
-                          <td className="py-3 text-center font-medium text-green-600">
+                          <td className="py-3 text-center font-medium text-[#006747]">
                             {score.netTotal}
                           </td>
                           <td className="py-3 text-center">
                             <span
                               className={`px-2 py-0.5 rounded text-xs ${
                                 score.isComplete
-                                  ? 'bg-green-100 text-green-800'
-                                  : 'bg-yellow-100 text-yellow-800'
+                                  ? 'bg-[#006747]/20 text-[#006747]'
+                                  : 'bg-[#d4af37]/20 text-[#b8960c]'
                               }`}
                             >
                               {score.isComplete ? 'Complete' : 'In Progress'}
