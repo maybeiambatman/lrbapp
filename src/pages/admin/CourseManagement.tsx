@@ -465,9 +465,10 @@ function CourseForm({
 }
 
 export function CourseManagement() {
-  const { courses, addCourse, updateCourse } = useStore();
+  const { courses, addCourse, updateCourse, deleteCourse } = useStore();
   const [showForm, setShowForm] = useState(false);
   const [editingCourse, setEditingCourse] = useState<Course | undefined>();
+  const [deletingCourse, setDeletingCourse] = useState<Course | null>(null);
 
   const handleSave = (course: Course) => {
     if (editingCourse) {
@@ -482,6 +483,17 @@ export function CourseManagement() {
   const handleEdit = (course: Course) => {
     setEditingCourse(course);
     setShowForm(true);
+  };
+
+  const handleDelete = (course: Course) => {
+    setDeletingCourse(course);
+  };
+
+  const confirmDelete = () => {
+    if (deletingCourse) {
+      deleteCourse(deletingCourse.id);
+      setDeletingCourse(null);
+    }
   };
 
   const handleCancel = () => {
@@ -570,10 +582,48 @@ export function CourseManagement() {
                     >
                       <Edit2 className="h-4 w-4" />
                     </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDelete(course)}
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
               </Card>
             ))}
+          </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {deletingCourse && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <Card className="max-w-md mx-4">
+              <div className="space-y-4">
+                <h2 className="text-xl font-bold text-gray-900">Delete Course</h2>
+                <p className="text-gray-600">
+                  Are you sure you want to delete <strong>{deletingCourse.name}</strong>?
+                  This action cannot be undone.
+                </p>
+                <div className="flex gap-3">
+                  <Button
+                    variant="secondary"
+                    onClick={() => setDeletingCourse(null)}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={confirmDelete}
+                    className="flex-1 bg-red-600 hover:bg-red-700"
+                  >
+                    Delete Course
+                  </Button>
+                </div>
+              </div>
+            </Card>
           </div>
         )}
       </div>

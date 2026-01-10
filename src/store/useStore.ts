@@ -25,6 +25,7 @@ interface AppStore {
   courses: Course[];
   addCourse: (course: Course) => void;
   updateCourse: (courseId: string, updates: Partial<Course>) => void;
+  deleteCourse: (courseId: string) => void;
   getCourse: (courseId: string) => Course | undefined;
 
   // Tee Times
@@ -150,6 +151,9 @@ export const useStore = create<AppStore>()(
         courses: state.courses.map((c) =>
           c.id === courseId ? { ...c, ...updates } : c
         )
+      })),
+      deleteCourse: (courseId) => set((state) => ({
+        courses: state.courses.filter((c) => c.id !== courseId)
       })),
       getCourse: (courseId) => get().courses.find((c) => c.id === courseId),
 

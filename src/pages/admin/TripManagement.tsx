@@ -675,11 +675,20 @@ function PrizesTab({
   trip: Trip;
   updatePrizes: (tripId: string, prizes: Prize[]) => void;
 }) {
-  const { scores } = useStore();
+  const { scores, courses } = useStore();
   const [prizes, setPrizes] = useState(trip.prizes);
   const [showAddPrize, setShowAddPrize] = useState(false);
   const [newPrizeName, setNewPrizeName] = useState('');
   const [newPrizeAmount, setNewPrizeAmount] = useState('');
+
+  // Get par 3 holes for a round's course
+  const getPar3Holes = (roundNumber?: number) => {
+    if (!roundNumber) return [];
+    const courseId = trip.courses[roundNumber - 1];
+    const course = courses.find(c => c.id === courseId);
+    if (!course) return [];
+    return course.holes.filter(h => h.par === 3);
+  };
 
   // Get scores for this trip to show current leaders
   const tripScores = scores.filter(s => s.tripId === trip.id);
@@ -779,16 +788,25 @@ function PrizesTab({
                   <div className="flex flex-wrap gap-4 pl-4 border-l-2 border-orange-200">
                     <div className="flex items-center gap-2">
                       <label className="text-sm text-gray-600">CTP Hole:</label>
-                      <select
-                        value={prize.ctpHole || ''}
-                        onChange={(e) => handleCtpHoleChange(prize.id, e.target.value)}
-                        className="px-2 py-1 border rounded text-sm"
-                      >
-                        <option value="">Select hole</option>
-                        {[3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18].map((h) => (
-                          <option key={h} value={h}>Hole {h}</option>
-                        ))}
-                      </select>
+                      {(() => {
+                        const par3Holes = getPar3Holes(prize.roundNumber);
+                        return par3Holes.length > 0 ? (
+                          <select
+                            value={prize.ctpHole || ''}
+                            onChange={(e) => handleCtpHoleChange(prize.id, e.target.value)}
+                            className="px-2 py-1 border rounded text-sm"
+                          >
+                            <option value="">Select par 3</option>
+                            {par3Holes.map((h) => (
+                              <option key={h.number} value={h.number}>Hole {h.number}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <span className="text-sm text-gray-500 italic">
+                            {prize.roundNumber ? 'No course assigned' : 'Select round first'}
+                          </span>
+                        );
+                      })()}
                     </div>
                     <div className="flex items-center gap-2">
                       <label className="text-sm text-gray-600">Winner:</label>
