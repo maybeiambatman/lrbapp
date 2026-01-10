@@ -136,7 +136,8 @@ export function ScoreEntry() {
 
   const handleSave = () => {
     const { grossTotal, netTotal, holes } = calculateTotals();
-    const isComplete = holeScores.every((s) => s > 0);
+    // Round is complete when all holes in the course have a score > 0
+    const isComplete = course.holes.every((_, index) => holeScores[index] > 0);
 
     const scoreData: RoundScore = {
       id: existingScoreId || generateId(),
