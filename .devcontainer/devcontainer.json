@@ -1,0 +1,37 @@
+{
+  "name": "lrbapp",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-20-bullseye",
+  "remoteUser": "node",
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "postCreateCommand": "npm install",
+  "forwardPorts": [5173, 4173],
+  "portsAttributes": {
+    "5173": {
+      "label": "Vite dev",
+      "onAutoForward": "openBrowser"
+    },
+    "4173": {
+      "label": "Vite preview"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "bradlc.vscode-tailwindcss",
+        "GitHub.vscode-pull-request-github",
+        "eamodio.gitlens",
+        "mhutchie.git-graph",
+        "esbenp.prettier-vscode",
+        "editorconfig.editorconfig",
+        "dsznajder.es7-react-js-snippets",
+        "usernamehm.errorlens"
+      ]
+    }
+  },
+  "remoteEnv": {
+    "CHOKIDAR_USEPOLLING": "true"
+  }
+}
