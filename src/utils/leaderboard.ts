@@ -131,9 +131,23 @@ export function calculatePurse(
     if (!winnerId) {
       switch (prize.type) {
         case 'best_cumulative_net':
-          // Winner is the player with lowest total net who completed all rounds
-          if (leaderboard.length > 0 && leaderboard[0].roundsCompleted === trip.numberOfRounds) {
-            winnerId = leaderboard[0].playerId;
+          // Show current leader based on completed rounds (live leader)
+          // Players must have at least one completed round to be considered
+          const eligiblePlayers = leaderboard.filter(e => e.roundsCompleted > 0);
+          if (eligiblePlayers.length > 0) {
+            // Sort by average net per round for fair comparison when players have different # of rounds
+            const sorted = [...eligiblePlayers].sort((a, b) => {
+              // If same number of rounds, compare total net
+              if (a.roundsCompleted === b.roundsCompleted) {
+                return a.totalNet - b.totalNet;
+              }
+              // Otherwise, prioritize players with more completed rounds, then by total net
+              if (b.roundsCompleted !== a.roundsCompleted) {
+                return b.roundsCompleted - a.roundsCompleted;
+              }
+              return a.totalNet - b.totalNet;
+            });
+            winnerId = sorted[0].playerId;
           }
           break;
 
@@ -203,18 +217,36 @@ export function getPrizeWinner(
   trip: Trip,
   scores: RoundScore[],
   leaderboard: LeaderboardEntry[]
-): { winnerId: string; playerName: string } | null {
+): { winnerId: string; playerName: string; isLive?: boolean } | null {
   // If manually awarded, use that
   if (prize.winnerId) {
     const player = trip.players.find(p => p.id === prize.winnerId);
-    return player ? { winnerId: prize.winnerId, playerName: player.name } : null;
+    return player ? { winnerId: prize.winnerId, playerName: player.name, isLive: false } : null;
   }
 
   // Auto-calculate based on prize type
   switch (prize.type) {
     case 'best_cumulative_net':
-      if (leaderboard.length > 0 && leaderboard[0].roundsCompleted === trip.numberOfRounds) {
-        return { winnerId: leaderboard[0].playerId, playerName: leaderboard[0].playerName };
+      // Show current leader based on completed rounds
+      const eligiblePlayers = leaderboard.filter(e => e.roundsCompleted > 0);
+      if (eligiblePlayers.length > 0) {
+        const sorted = [...eligiblePlayers].sort((a, b) => {
+          if (a.roundsCompleted === b.roundsCompleted) {
+            return a.totalNet - b.totalNet;
+          }
+          if (b.roundsCompleted !== a.roundsCompleted) {
+            return b.roundsCompleted - a.roundsCompleted;
+          }
+          return a.totalNet - b.totalNet;
+        });
+        const leader = sorted[0];
+        // It's "live" (not final) if not all players have completed all rounds
+        const allComplete = eligiblePlayers.every(p => p.roundsCompleted === trip.numberOfRounds);
+        return {
+          winnerId: leader.playerId,
+          playerName: leader.playerName,
+          isLive: !allComplete
+        };
       }
       break;
 
@@ -222,7 +254,16 @@ export function getPrizeWinner(
       if (prize.roundNumber) {
         const bestNet = getBestNetForRound(scores, trip.id, prize.roundNumber);
         if (bestNet) {
-          return { winnerId: bestNet.playerId, playerName: bestNet.playerName };
+          // Check if all players have completed this round
+          const roundScores = scores.filter(
+            s => s.tripId === trip.id && s.roundNumber === prize.roundNumber && s.isComplete
+          );
+          const allPlayersCompleted = roundScores.length >= trip.players.length;
+          return {
+            winnerId: bestNet.playerId,
+            playerName: bestNet.playerName,
+            isLive: !allPlayersCompleted
+          };
         }
       }
       break;

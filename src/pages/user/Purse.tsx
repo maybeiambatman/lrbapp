@@ -110,7 +110,6 @@ export function Purse() {
             {currentTrip.prizes.map((prize) => {
               const winner = getPrizeWinner(prize, currentTrip, scores, leaderboard);
               const isCTP = prize.type === 'closest_to_pin';
-              const isAutoCalculated = winner && !prize.winnerId;
 
               return (
                 <div key={prize.id} className="py-4 flex items-center justify-between">
@@ -147,7 +146,7 @@ export function Purse() {
                     {winner ? (
                       <div className="flex items-center gap-1 justify-end">
                         <span className="text-sm text-gray-700">{winner.playerName}</span>
-                        {isAutoCalculated && (
+                        {winner.isLive && (
                           <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
                             Live
                           </span>
