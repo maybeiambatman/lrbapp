@@ -9,8 +9,11 @@ import type { Trip, TripPlayer, TeeTime, Prize, Course } from '../../types';
 export function TripManagement() {
   const { trips, courses, addTrip, deleteTrip } = useStore();
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
+  const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'roster' | 'teetimes' | 'prizes'>('roster');
+
+  // Derive selectedTrip from store to ensure it's always up-to-date
+  const selectedTrip = selectedTripId ? trips.find(t => t.id === selectedTripId) || null : null;
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   // Delete confirmation state
@@ -137,7 +140,7 @@ export function TripManagement() {
             trip={selectedTrip}
             activeTab={activeTab}
             setActiveTab={setActiveTab}
-            onBack={() => setSelectedTrip(null)}
+            onBack={() => setSelectedTripId(null)}
             courses={courses}
           />
         ) : (
@@ -169,7 +172,7 @@ export function TripManagement() {
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="secondary" onClick={() => setSelectedTrip(trip)}>
+                    <Button variant="secondary" onClick={() => setSelectedTripId(trip.id)}>
                       <Edit2 className="h-4 w-4 mr-2" />
                       Manage
                     </Button>
