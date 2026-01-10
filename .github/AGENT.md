@@ -1,5 +1,27 @@
 # Agent Instructions for Golf Trip Manager
 
+## Recommended VS Code Extensions
+
+### GitHub & Git Management
+- **GitHub Pull Requests and Issues** (`GitHub.vscode-pull-request-github`) - Manage PRs and issues directly in VS Code
+- **GitLens** (`eamodio.gitlens`) - Supercharge Git capabilities (blame, history, comparisons)
+- **Git Graph** (`mhutchie.git-graph`) - Visual repository graph and commit history
+
+### Code Quality
+- **ESLint** (`dbaeumer.vscode-eslint`) - JavaScript/TypeScript linting
+- **Prettier** (`esbenp.prettier-vscode`) - Code formatter
+- **EditorConfig** (`editorconfig.editorconfig`) - Consistent coding styles
+
+### Development Tools
+- **Tailwind CSS IntelliSense** (`bradlc.vscode-tailwindcss`) - Autocomplete for Tailwind classes
+- **ES7+ React/Redux/React-Native snippets** (`dsznajder.es7-react-js-snippets`) - Code snippets
+- **TypeScript Error Translator** (`mattpocock.ts-error-translator`) - Better TypeScript error messages
+
+### Optional but Useful
+- **Conventional Commits** (`vivaxy.vscode-conventional-commits`) - Enforce commit message standards
+- **Error Lens** (`usernamehm.errorlens`) - Inline error highlighting
+- **Import Cost** (`wix.vscode-import-cost`) - Display import/require package sizes
+
 ## Development Setup
 
 ### Starting the Dev Server

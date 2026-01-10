@@ -20,7 +20,14 @@
     "vscode": {
       "extensions": [
         "dbaeumer.vscode-eslint",
-        "bradlc.vscode-tailwindcss"
+        "bradlc.vscode-tailwindcss",
+        "GitHub.vscode-pull-request-github",
+        "eamodio.gitlens",
+        "mhutchie.git-graph",
+        "esbenp.prettier-vscode",
+        "editorconfig.editorconfig",
+        "dsznajder.es7-react-js-snippets",
+        "usernamehm.errorlens"
       ]
     }
   },
