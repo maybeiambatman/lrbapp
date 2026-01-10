@@ -573,6 +573,51 @@ function TeeTimesTab({
     });
   };
 
+  const handleRemoveRound = (roundIndex: number) => {
+    if (trip.numberOfRounds <= 1) return; // Don't allow removing the last round
+
+    const roundNumber = roundIndex + 1;
+
+    // Remove course for this round
+    const newCourses = [...roundCourses];
+    newCourses.splice(roundIndex, 1);
+
+    // Remove tee times for this round and shift subsequent round numbers down
+    const newTeeTimes = trip.teeTimes
+      .filter(tt => tt.roundNumber !== roundNumber)
+      .map(tt => tt.roundNumber > roundNumber
+        ? { ...tt, roundNumber: tt.roundNumber - 1 }
+        : tt
+      );
+
+    // Remove prizes for this round and shift subsequent round numbers down
+    const newPrizes = trip.prizes
+      .filter(p => p.roundNumber !== roundNumber)
+      .map(p => {
+        if (p.roundNumber && p.roundNumber > roundNumber) {
+          const newRoundNum = p.roundNumber - 1;
+          return {
+            ...p,
+            roundNumber: newRoundNum,
+            name: p.name.replace(`Round ${p.roundNumber}`, `Round ${newRoundNum}`),
+          };
+        }
+        return p;
+      });
+
+    updateTrip(trip.id, {
+      numberOfRounds: trip.numberOfRounds - 1,
+      courses: newCourses,
+      teeTimes: newTeeTimes,
+      prizes: newPrizes,
+    });
+
+    // Reset selected round if it was the removed one
+    if (selectedRound > trip.numberOfRounds - 1) {
+      setSelectedRound(Math.max(1, trip.numberOfRounds - 1));
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Round Selector and Course Assignment */}
@@ -598,6 +643,18 @@ function TeeTimesTab({
                 onChange={(value) => handleCourseChange(i, value)}
                 className="flex-1"
               />
+              <button
+                onClick={() => handleRemoveRound(i)}
+                disabled={trip.numberOfRounds <= 1}
+                className={`p-2 rounded-lg transition-colors ${
+                  trip.numberOfRounds <= 1
+                    ? 'text-gray-300 cursor-not-allowed'
+                    : 'text-red-500 hover:bg-red-50'
+                }`}
+                title={trip.numberOfRounds <= 1 ? 'Cannot remove the only round' : 'Remove round'}
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
             </div>
           ))}
         </div>
