@@ -542,10 +542,46 @@ function TeeTimesTab({
 
   const roundTeeTimes = trip.teeTimes.filter((tt) => tt.roundNumber === selectedRound);
 
+  const handleAddRound = () => {
+    const newRoundNumber = trip.numberOfRounds + 1;
+
+    // Add new prizes for the new round
+    const newPrizes: Prize[] = [
+      ...trip.prizes,
+      {
+        id: generateId(),
+        name: `Round ${newRoundNumber} Best Net`,
+        type: 'best_net_round',
+        roundNumber: newRoundNumber,
+        amount: 0,
+      },
+      {
+        id: generateId(),
+        name: `Round ${newRoundNumber} Closest to Pin`,
+        type: 'closest_to_pin',
+        roundNumber: newRoundNumber,
+        amount: 0,
+      },
+    ];
+
+    updateTrip(trip.id, {
+      numberOfRounds: newRoundNumber,
+      prizes: newPrizes,
+    });
+  };
+
   return (
     <div className="space-y-6">
       {/* Round Selector and Course Assignment */}
-      <Card title="Round Setup">
+      <Card
+        title="Round Setup"
+        actions={
+          <Button size="sm" onClick={handleAddRound}>
+            <Plus className="h-4 w-4 mr-1" />
+            Add Round
+          </Button>
+        }
+      >
         <div className="space-y-4">
           {Array.from({ length: trip.numberOfRounds }, (_, i) => (
             <div key={i} className="flex items-center gap-4">
