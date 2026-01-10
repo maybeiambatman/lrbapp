@@ -1,11 +1,87 @@
-# React + TypeScript + Vite
+# Golf Trip Manager
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A comprehensive web application for managing golf trips, including player rosters, tee times, scoring, leaderboards, and prize purses.
 
-Currently, two official plugins are available:
+## Quick Start
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Development
+
+1. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+2. **Start the development server**:
+   
+   - **In a dev container or Docker**: Use the `--host` flag to expose the server:
+     ```bash
+     npm run dev -- --host
+     ```
+   
+   - **Local development**: Standard command works fine:
+     ```bash
+     npm run dev
+     ```
+
+3. **Access the application**:
+   - Local: http://localhost:5173/
+   - Container: VS Code will auto-forward port 5173 (check the "Ports" tab)
+
+The dev server includes Hot Module Replacement (HMR), so changes will automatically reload in your browser.
+
+### Build for Production
+
+```bash
+npm run build
+```
+
+### Preview Production Build
+
+```bash
+npm run preview
+```
+
+## Tech Stack
+
+This application is built with:
+
+- **React 19** - UI framework
+- **TypeScript** - Type safety
+- **Vite** - Build tool with HMR
+- **Tailwind CSS 4** - Styling
+- **Zustand** - State management
+- **React Router** - Navigation
+- **Firebase** - Backend services (planned)
+- **Tesseract.js** - OCR for scorecard parsing
+
+## Project Structure
+
+```
+src/
+├── components/
+│   └── common/        # Reusable UI components (Button, Card, Input, etc.)
+├── config/            # Configuration files (Firebase, etc.)
+├── pages/             # Page components
+│   ├── admin/         # Admin dashboard, course/trip management
+│   └── user/          # User-facing pages (leaderboard, scoring, etc.)
+├── store/             # Zustand store for state management
+├── types/             # TypeScript type definitions
+└── utils/             # Utility functions (handicap, leaderboard, OCR parsing)
+```
+
+## Important Notes for Development
+
+### Container/Codespace Development
+When running in a dev container or GitHub Codespace, **always use the `--host` flag** with the dev server:
+```bash
+npm run dev -- --host
+```
+This ensures Vite binds to `0.0.0.0` instead of just `localhost`, allowing proper port forwarding.
+
+### Port Forwarding
+- Port 5173 should automatically forward in VS Code
+- Check the "Ports" tab (next to Terminal) if you can't access the app
+- Click the globe icon or local address to open in your browser
 
 ## React Compiler
 
