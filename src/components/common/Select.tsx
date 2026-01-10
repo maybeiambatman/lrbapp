@@ -39,7 +39,8 @@ export function Select({
         value={value}
         onChange={(e) => onChange?.(e.target.value)}
         className={`
-          w-full px-3 py-2 border rounded-lg shadow-sm bg-white
+          w-full px-4 py-3 border rounded-lg shadow-sm bg-white
+          text-base min-h-[44px]
           focus:outline-none focus:ring-2 focus:ring-[#006747] focus:border-[#006747]
           disabled:bg-gray-100 disabled:cursor-not-allowed
           ${error ? 'border-red-500' : 'border-gray-300'}

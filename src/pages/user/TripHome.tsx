@@ -36,18 +36,18 @@ export function TripHome() {
     <Layout>
       <div className="space-y-6">
         {/* Welcome Header */}
-        <div className="relative bg-gradient-to-r from-[#006747] to-[#004d35] rounded-xl p-6 text-white overflow-hidden">
+        <div className="relative bg-gradient-to-r from-[#006747] to-[#004d35] rounded-xl p-4 sm:p-6 text-white overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-[#d4af37]/10 rounded-full -translate-y-1/2 translate-x-1/2" />
           <div className="relative">
-            <h1 className="text-2xl font-bold mb-2 font-['Playfair_Display',Georgia,serif]">Welcome, {currentUser.name}!</h1>
-            <p className="text-green-100">{currentTrip.name}</p>
-            <div className="flex gap-6 mt-4 text-sm">
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-[#d4af37]" />
+            <h1 className="text-xl sm:text-2xl font-bold mb-1 font-['Playfair_Display',Georgia,serif]">Welcome, {currentUser.name}!</h1>
+            <p className="text-green-100 text-sm sm:text-base">{currentTrip.name}</p>
+            <div className="flex flex-wrap gap-x-4 gap-y-2 mt-3 text-xs sm:text-sm">
+              <div className="flex items-center gap-1.5">
+                <Calendar className="h-3.5 w-3.5 text-[#d4af37]" />
                 <span>{currentTrip.startDate} - {currentTrip.endDate}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-[#d4af37]" />
+              <div className="flex items-center gap-1.5">
+                <Users className="h-3.5 w-3.5 text-[#d4af37]" />
                 <span>{currentTrip.players.length} players</span>
               </div>
             </div>
@@ -84,10 +84,10 @@ export function TripHome() {
           </Card>
         </div>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Quick Actions - Hidden on mobile since we have bottom nav */}
+        <div className="hidden sm:grid grid-cols-1 md:grid-cols-3 gap-4">
           <Link to="/trip/scores">
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <Card className="hover:shadow-md transition-shadow cursor-pointer active:scale-[0.98]">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-[#006747]/10 rounded-lg">
                   <Flag className="h-6 w-6 text-[#006747]" />
@@ -101,7 +101,7 @@ export function TripHome() {
           </Link>
 
           <Link to="/trip/leaderboard">
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <Card className="hover:shadow-md transition-shadow cursor-pointer active:scale-[0.98]">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-[#d4af37]/20 rounded-lg">
                   <Trophy className="h-6 w-6 text-[#d4af37]" />
@@ -115,7 +115,7 @@ export function TripHome() {
           </Link>
 
           <Link to="/trip/purse">
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <Card className="hover:shadow-md transition-shadow cursor-pointer active:scale-[0.98]">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-[#006747]/10 rounded-lg">
                   <span className="text-2xl text-[#006747]">$</span>
@@ -191,48 +191,46 @@ export function TripHome() {
           {playerScores.length === 0 ? (
             <p className="text-gray-500 text-center py-4">No scores entered yet</p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="text-left text-sm text-gray-500 border-b">
-                    <th className="pb-2">Round</th>
-                    <th className="pb-2">Course</th>
-                    <th className="pb-2 text-center">Gross</th>
-                    <th className="pb-2 text-center">Net</th>
-                    <th className="pb-2 text-center">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {playerScores
-                    .sort((a, b) => a.roundNumber - b.roundNumber)
-                    .map((score) => {
-                      const course = courses.find((c) => c.id === score.courseId);
-                      return (
-                        <tr key={score.id} className="border-b last:border-0">
-                          <td className="py-3 font-medium">Round {score.roundNumber}</td>
-                          <td className="py-3 text-sm text-gray-600">
-                            {course?.name || 'Unknown'}
-                          </td>
-                          <td className="py-3 text-center">{score.grossTotal}</td>
-                          <td className="py-3 text-center font-medium text-[#006747]">
-                            {score.netTotal}
-                          </td>
-                          <td className="py-3 text-center">
-                            <span
-                              className={`px-2 py-0.5 rounded text-xs ${
-                                score.isComplete
-                                  ? 'bg-[#006747]/20 text-[#006747]'
-                                  : 'bg-[#d4af37]/20 text-[#b8960c]'
-                              }`}
-                            >
-                              {score.isComplete ? 'Complete' : 'In Progress'}
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                </tbody>
-              </table>
+            <div className="space-y-3">
+              {playerScores
+                .sort((a, b) => a.roundNumber - b.roundNumber)
+                .map((score) => {
+                  const course = courses.find((c) => c.id === score.courseId);
+                  return (
+                    <div
+                      key={score.id}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">Round {score.roundNumber}</span>
+                          <span
+                            className={`px-1.5 py-0.5 rounded text-xs ${
+                              score.isComplete
+                                ? 'bg-[#006747]/20 text-[#006747]'
+                                : 'bg-[#d4af37]/20 text-[#b8960c]'
+                            }`}
+                          >
+                            {score.isComplete ? 'Complete' : 'In Progress'}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-500 truncate">
+                          {course?.name || 'Unknown'}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-4 text-right">
+                        <div>
+                          <p className="text-xs text-gray-500">Gross</p>
+                          <p className="font-medium">{score.grossTotal}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500">Net</p>
+                          <p className="font-bold text-[#006747]">{score.netTotal}</p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
             </div>
           )}
         </Card>

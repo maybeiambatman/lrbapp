@@ -174,8 +174,8 @@ export function Leaderboard() {
                   <div key={entry.playerId}>
                     <div
                       className={`
-                        flex items-center gap-4 p-4 rounded-lg border-2 cursor-pointer
-                        transition-all hover:shadow-md
+                        flex items-center gap-2 sm:gap-4 p-3 sm:p-4 rounded-lg border-2 cursor-pointer
+                        transition-all active:scale-[0.99] hover:shadow-md
                         ${getPositionStyle(position)}
                       `}
                       onClick={() =>
@@ -183,46 +183,47 @@ export function Leaderboard() {
                       }
                     >
                       {/* Position */}
-                      <div className="flex-shrink-0 w-8">
+                      <div className="flex-shrink-0 w-6 sm:w-8">
                         {getPositionIcon(position)}
                       </div>
 
                       {/* Player Info */}
                       <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-gray-900 truncate">
+                        <div className="font-semibold text-gray-900 truncate text-sm sm:text-base">
                           {entry.playerName}
                         </div>
-                        <div className="text-sm text-gray-500">
-                          Hdcp: {entry.handicap} | {entry.roundsCompleted} round
-                          {entry.roundsCompleted !== 1 ? 's' : ''} completed
+                        <div className="text-xs sm:text-sm text-gray-500">
+                          <span className="hidden sm:inline">Hdcp: {entry.handicap} | </span>
+                          <span className="sm:hidden">H:{entry.handicap} · </span>
+                          {entry.roundsCompleted} rd{entry.roundsCompleted !== 1 ? 's' : ''}
                         </div>
                       </div>
 
                       {/* Scores */}
-                      <div className="flex gap-6 items-center">
-                        <div className="text-center">
+                      <div className="flex gap-3 sm:gap-6 items-center">
+                        <div className="text-center hidden sm:block">
                           <div className="text-xs text-gray-500">Gross</div>
                           <div className="font-medium">{entry.totalGross || '-'}</div>
                         </div>
                         <div className="text-center">
                           <div className="text-xs text-gray-500">Net</div>
-                          <div className="font-bold text-[#006747] text-lg">
+                          <div className="font-bold text-[#006747] text-base sm:text-lg">
                             {entry.totalNet || '-'}
                           </div>
                         </div>
                         {isExpanded ? (
-                          <ChevronUp className="h-5 w-5 text-gray-400" />
+                          <ChevronUp className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                         ) : (
-                          <ChevronDown className="h-5 w-5 text-gray-400" />
+                          <ChevronDown className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                         )}
                       </div>
                     </div>
 
                     {/* Expanded Round Details */}
                     {isExpanded && (
-                      <div className="mt-2 ml-12 p-4 bg-gray-50 rounded-lg">
-                        <h4 className="font-medium text-gray-700 mb-3">Round Details</h4>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="mt-2 ml-6 sm:ml-12 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                        <h4 className="font-medium text-gray-700 mb-3 text-sm sm:text-base">Round Details</h4>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-4">
                           {entry.rounds.map((round) => {
                             const course = courses.find(
                               (c) => c.id === currentTrip.courses[round.roundNumber - 1]

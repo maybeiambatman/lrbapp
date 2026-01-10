@@ -197,20 +197,22 @@ export function ScoreEntry() {
           />
         </div>
 
-        {/* Handicap Info */}
+        {/* Handicap Info - Compact on mobile */}
         <Card>
-          <div className="flex justify-between items-center">
-            <div>
-              <span className="text-sm text-gray-500">Your Handicap: </span>
-              <span className="font-medium">{handicap}</span>
+          <div className="flex justify-between items-center text-center">
+            <div className="flex-1">
+              <p className="text-xs text-gray-500">Handicap</p>
+              <p className="text-lg font-bold">{handicap}</p>
             </div>
-            <div>
-              <span className="text-sm text-gray-500">Course Handicap: </span>
-              <span className="font-medium">{courseHandicap}</span>
+            <div className="w-px h-8 bg-gray-200" />
+            <div className="flex-1">
+              <p className="text-xs text-gray-500">Course HCP</p>
+              <p className="text-lg font-bold">{courseHandicap}</p>
             </div>
-            <div>
-              <span className="text-sm text-gray-500">Total Strokes: </span>
-              <span className="font-medium">{courseHandicap}</span>
+            <div className="w-px h-8 bg-gray-200" />
+            <div className="flex-1">
+              <p className="text-xs text-gray-500">Strokes</p>
+              <p className="text-lg font-bold text-[#006747]">{courseHandicap}</p>
             </div>
           </div>
         </Card>
@@ -218,58 +220,68 @@ export function ScoreEntry() {
         {/* Current Hole Entry */}
         <Card className="bg-gradient-to-br from-green-50 to-green-100">
           <div className="text-center space-y-4">
+            {/* Hole Navigation */}
             <div className="flex items-center justify-between">
-              <Button
-                variant="ghost"
+              <button
                 onClick={() => setCurrentHole(Math.max(1, currentHole - 1))}
                 disabled={currentHole === 1}
+                className={`p-3 rounded-full transition-all active:scale-95 ${
+                  currentHole === 1
+                    ? 'text-gray-300'
+                    : 'text-[#006747] bg-white shadow-md active:shadow-sm'
+                }`}
               >
-                <ChevronLeft className="h-6 w-6" />
-              </Button>
+                <ChevronLeft className="h-8 w-8" />
+              </button>
 
               <div>
                 <div className="flex items-center justify-center gap-2">
-                  <span className="text-4xl font-bold text-green-700">
+                  <span className="text-3xl sm:text-4xl font-bold text-[#006747]">
                     Hole {currentHole}
                   </span>
                   {isCtpHole && (
-                    <span className="flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium">
-                      <Target className="h-4 w-4" />
+                    <span className="flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs sm:text-sm font-medium">
+                      <Target className="h-3 w-3 sm:h-4 sm:w-4" />
                       CTP
                     </span>
                   )}
                 </div>
-                <div className="text-lg text-gray-600">
+                <div className="text-base sm:text-lg text-gray-600">
                   Par {currentHoleData.par}
                   {strokes > 0 && (
-                    <span className="ml-2 text-green-600">
-                      ({strokes} stroke{strokes > 1 ? 's' : ''})
+                    <span className="ml-2 text-[#006747] font-medium">
+                      +{strokes}
                     </span>
                   )}
                 </div>
               </div>
 
-              <Button
-                variant="ghost"
+              <button
                 onClick={() => setCurrentHole(Math.min(18, currentHole + 1))}
                 disabled={currentHole === 18}
+                className={`p-3 rounded-full transition-all active:scale-95 ${
+                  currentHole === 18
+                    ? 'text-gray-300'
+                    : 'text-[#006747] bg-white shadow-md active:shadow-sm'
+                }`}
               >
-                <ChevronRight className="h-6 w-6" />
-              </Button>
+                <ChevronRight className="h-8 w-8" />
+              </button>
             </div>
 
-            {/* Score buttons */}
-            <div className="grid grid-cols-6 gap-2 max-w-md mx-auto">
+            {/* Score buttons - larger for mobile */}
+            <div className="grid grid-cols-5 gap-2 sm:gap-3 max-w-sm mx-auto">
               {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((score) => (
                 <button
                   key={score}
                   onClick={() => handleScoreChange(score)}
                   className={`
-                    aspect-square rounded-lg text-xl font-bold transition-all
+                    aspect-square rounded-xl text-xl sm:text-2xl font-bold transition-all
+                    active:scale-95 min-h-[52px]
                     ${
                       grossScore === score
-                        ? 'bg-green-600 text-white scale-110'
-                        : 'bg-white text-gray-700 hover:bg-green-100'
+                        ? 'bg-[#006747] text-white shadow-lg scale-105'
+                        : 'bg-white text-gray-700 shadow-md active:shadow-sm'
                     }
                   `}
                 >

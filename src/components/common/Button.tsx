@@ -16,7 +16,7 @@ export function Button({
   disabled,
   ...props
 }: ButtonProps) {
-  const baseStyles = 'font-medium rounded transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center font-serif tracking-wide';
+  const baseStyles = 'font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center font-serif tracking-wide active:scale-[0.98]';
 
   const variantStyles = {
     primary: 'bg-[#006747] text-white hover:bg-[#004d35] focus:ring-[#006747] shadow-sm hover:shadow-md',
@@ -26,10 +26,11 @@ export function Button({
     gold: 'bg-[#d4af37] text-[#004d35] hover:bg-[#b8960c] focus:ring-[#d4af37] shadow-sm hover:shadow-md font-semibold',
   };
 
+  // Mobile-first sizing with minimum touch target of 44px
   const sizeStyles = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-5 py-2.5 text-base',
-    lg: 'px-7 py-3 text-lg',
+    sm: 'px-3 py-2 text-sm min-h-[36px]',
+    md: 'px-5 py-2.5 text-base min-h-[44px]',
+    lg: 'px-7 py-3 text-lg min-h-[52px]',
   };
 
   return (

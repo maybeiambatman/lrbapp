@@ -3,12 +3,12 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Home,
   Trophy,
-  Users,
   Settings,
   LogOut,
   Menu,
   X,
   Flag,
+  DollarSign,
 } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { Button } from './Button';
@@ -29,7 +29,9 @@ export function Layout({ children }: LayoutProps) {
     navigate('/');
   };
 
-  const navItems = currentUser?.isAdmin
+  const isAdmin = currentUser?.isAdmin;
+
+  const navItems = isAdmin
     ? [
         { path: '/admin', icon: Settings, label: 'Dashboard' },
         { path: '/admin/courses', icon: Flag, label: 'Courses' },
@@ -37,12 +39,15 @@ export function Layout({ children }: LayoutProps) {
       ]
     : currentTrip
     ? [
-        { path: '/trip', icon: Home, label: 'Trip Home' },
-        { path: '/trip/scores', icon: Flag, label: 'Enter Scores' },
-        { path: '/trip/leaderboard', icon: Trophy, label: 'Leaderboard' },
-        { path: '/trip/purse', icon: Users, label: 'Purse' },
+        { path: '/trip', icon: Home, label: 'Home' },
+        { path: '/trip/scores', icon: Flag, label: 'Scores' },
+        { path: '/trip/leaderboard', icon: Trophy, label: 'Leaders' },
+        { path: '/trip/purse', icon: DollarSign, label: 'Purse' },
       ]
     : [];
+
+  // Show bottom nav only for non-admin users with an active trip
+  const showBottomNav = !isAdmin && currentTrip && navItems.length > 0;
 
   return (
     <div className="min-h-screen bg-[#faf9f6]">
@@ -154,18 +159,48 @@ export function Layout({ children }: LayoutProps) {
       </header>
 
       {/* Main content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 ${showBottomNav ? 'pb-24' : ''}`}>
         {children}
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-[#006747]/10 bg-white mt-auto">
+      {/* Footer - hidden on mobile when bottom nav is shown */}
+      <footer className={`border-t border-[#006747]/10 bg-white mt-auto ${showBottomNav ? 'hidden md:block' : ''}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <p className="text-center text-sm text-[#006747]/60 font-medium">
             A Tradition Unlike Any Other
           </p>
         </div>
       </footer>
+
+      {/* Mobile Bottom Navigation */}
+      {showBottomNav && (
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 safe-area-pb">
+          <div className="flex justify-around items-center h-16">
+            {navItems.map((item) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`flex flex-col items-center justify-center flex-1 h-full py-2 transition-colors ${
+                    isActive
+                      ? 'text-[#006747]'
+                      : 'text-gray-500 active:text-[#006747]'
+                  }`}
+                >
+                  <item.icon className={`h-6 w-6 ${isActive ? 'text-[#006747]' : ''}`} />
+                  <span className={`text-xs mt-1 font-medium ${isActive ? 'text-[#006747]' : ''}`}>
+                    {item.label}
+                  </span>
+                  {isActive && (
+                    <div className="absolute bottom-0 w-12 h-0.5 bg-[#006747] rounded-t-full" />
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
+      )}
     </div>
   );
 }
