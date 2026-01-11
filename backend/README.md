@@ -19,28 +19,28 @@ This project uses VS Code Dev Containers with all dependencies pre-installed. Po
 ### Local Development
 
 1. **Run database migrations**:
-   \`\`\`bash
+   ```bash
    npx prisma migrate dev --url "postgresql://postgres:postgres@postgres:5432/lrbapp?schema=public"
-   \`\`\`
+   ```
 
 2. **Seed database** (optional but recommended):
-   \`\`\`bash
+   ```bash
    npm run db:seed
-   \`\`\`
+   ```
 
 3. **Start dev server**:
-   \`\`\`bash
+   ```bash
    npm run dev
-   \`\`\`
+   ```
 
 Server runs at http://localhost:3001
 
 ### View Database
 
 **Prisma Studio** (visual database browser):
-\`\`\`bash
-npx prisma studio --port 5555 --url "postgresql://postgres:postgres@postgres:5432/lrbapp?schema=public"
-\`\`\`
+```bash
+npx prisma studio --port 5555
+```
 Opens at http://localhost:5555
 
 ## Database Management
@@ -50,45 +50,48 @@ Opens at http://localhost:5555
 Prisma manages database schema evolution with migrations.
 
 **Create and apply a new migration**:
-\`\`\`bash
+```bash
 npx prisma migrate dev --name descriptive_name --url "postgresql://postgres:postgres@postgres:5432/lrbapp?schema=public"
-\`\`\`
+```
 
 **Apply migrations (production)**:
-\`\`\`bash
+```bash
 npx prisma migrate deploy --url "postgresql://postgres:postgres@postgres:5432/lrbapp?schema=public"
-\`\`\`
+```
 
 **Check migration status**:
-\`\`\`bash
+```bash
 npx prisma migrate status --url "postgresql://postgres:postgres@postgres:5432/lrbapp?schema=public"
-\`\`\`
+```
 
 **Reset database** (dev only - destroys all data!):
-\`\`\`bash
+```bash
 npx prisma migrate reset --force --url "postgresql://postgres:postgres@postgres:5432/lrbapp?schema=public"
-\`\`\`
+```
 
 ### Seeding
 
 Seed data for local development testing:
 
-\`\`\`bash
+```bash
 npm run db:seed
-\`\`\`
+```
 
 Seeds include:
 - Admin user (admin@golf.com)
-- Sample course (Augusta National)
-- Sample trip with 4 players
+- Sample course (Augusta National with 18 holes)
+- Sample trip (MSTR26) with 4 players
+- Sample games (Best Ball, Match Play, Nassau)
+- Sample teams and matches
+- Sample community
 
 ### Prisma Studio
 
 Visual database browser:
 
-\`\`\`bash
-npx prisma studio --port 5555 --url "postgresql://postgres:postgres@postgres:5432/lrbapp?schema=public"
-\`\`\`
+```bash
+npx prisma studio --port 5555
+```
 
 Opens at http://localhost:5555
 
@@ -96,9 +99,9 @@ Opens at http://localhost:5555
 
 If you modify the schema without creating a migration:
 
-\`\`\`bash
+```bash
 npm run db:generate
-\`\`\`
+```
 
 ### SQLTools Extension (VS Code)
 
@@ -110,14 +113,14 @@ For direct SQL query access, use the SQLTools PostgreSQL extension.
 - Choose: \`PostgreSQL\`
 
 **2. Configure connection**:
-\`\`\`
+```
 Connection name: LRB App (Dev)
 Server: postgres
 Port: 5432
 Database: lrbapp
 Username: postgres
 Password: postgres
-\`\`\`
+```
 
 **3. Save and connect**:
 - Click "Test Connection" to verify
@@ -130,7 +133,7 @@ Password: postgres
 - Select query text and run with \`Cmd/Ctrl + E + E\`
 
 **Example queries**:
-\`\`\`sql
+```sql
 -- View all trips
 SELECT * FROM "Trip";
 
@@ -145,7 +148,7 @@ FROM "Hole" h
 JOIN "Course" c ON h."courseId" = c.id
 WHERE c.name = 'Augusta National Golf Club'
 ORDER BY h.number;
-\`\`\`
+```
 
 **Note**: PostgreSQL requires double quotes for case-sensitive table/column names that Prisma generates.
 
@@ -181,13 +184,110 @@ ORDER BY h.number;
 - \`GET /api/users\` - Get all users
 - \`GET /api/users/email/:email\` - Get user by email
 - \`POST /api/users\` - Create user
+### Games
+
+- `GET /api/games` - Get all games (filter by tripId, roundNumber, format, isActive)
+- `GET /api/games/:id` - Get game by ID
+- `GET /api/games/:id/leaderboard` - Get game standings and leaderboard
+- `POST /api/games` - Create game
+- `PUT /api/games/:id` - Update game
+- `DELETE /api/games/:id` - Delete game
+
+**Game Formats**: BEST_BALL, COMBINED_SCORE, HIGH_LOW, MONEYBALL, SKINS, NASSAU, SCRAMBLE  
+**Play Types**: MATCH_PLAY, STROKE_PLAY  
+**Scoring Types**: GROSS, NET, BOTH
+
+### Matches
+
+- `GET /api/matches` - Get all matches (filter by gameId, roundNumber, status, isTeamMatch)
+- `GET /api/matches/:id` - Get match by ID
+- `POST /api/matches` - Create match
+- `PUT /api/matches/:id` - Update match scores and status
+- `POST /api/matches/:id/complete` - Complete match and determine winner
+- `DELETE /api/matches/:id` - Delete match
+
+**Match Statuses**: PENDING, IN_PROGRESS, COMPLETED, CANCELLED
+
+### Teams
+
+- `GET /api/teams` - Get all teams (filter by gameId)
+- `GET /api/teams/:id` - Get team by ID with player details
+- `GET /api/teams/:id/stats` - Get team statistics and match history
+- `POST /api/teams` - Create team
+- `PUT /api/teams/:id` - Update team
+- `DELETE /api/teams/:id` - Delete team
+
+### Communities
+
+- `GET /api/communities` - Get all communities (filter by isActive)
+- `GET /api/communities/:id` - Get community by ID
+- `POST /api/communities` - Create community
+- `PUT /api/communities/:id` - Update community
+- `DELETE /api/communities/:id` - Delete community
+- `POST /api/communities/:id/members` - Add member to community
+- `DELETE /api/communities/:id/members/:userId` - Remove member from community
+
+## REST API Examples
+
+See the `examples/rest/` directory for complete REST Client examples:
+
+- `trips.rest` - Trip management examples
+- `courses.rest` - Course management examples
+- `scores.rest` - Score tracking examples
+- `users.rest` - User management examples
+- `games.rest` - Game setup and management examples
+- `matches.rest` - Match tracking and results examples
+- `teams.rest` - Team creation and statistics examples
+- `communities.rest` - Community management examples
+
+Open these files in VS Code with the REST Client extension installed to execute requests directly.
+
+## Data Model
+
+### Core Entities
+
+- **User**: Application users (admins and players)
+- **Course**: Golf courses with holes and tees
+- **Trip**: Golf trips with players, rounds, and prizes
+- **TripPlayer**: Players participating in a trip
+- **RoundScore**: Score tracking for each player's round (with status)
+- **HoleScore**: Individual hole scores
+
+### Game System
+
+- **Game**: Competition format (Best Ball, Nassau, Match Play, etc.)
+- **Match**: Individual competition within a game (team or individual)
+- **Team**: Player teams for team-based formats
+- **Community**: Recurring golf groups across multiple trips
+
+### Round Status
+
+Rounds can be: `NOT_STARTED`, `STARTED`, `FINISHED`, `ABANDONED`
+
+### Game Formats
+
+- **BEST_BALL**: Team format where best score on each hole counts
+- **COMBINED_SCORE**: Team scores are added together
+- **HIGH_LOW**: One high, one low score counts
+- **MONEYBALL**: Rotating player whose score counts double
+- **SKINS**: Winner takes all for each hole
+- **NASSAU**: Three bets (front 9, back 9, overall)
+- **SCRAMBLE**: Best ball position, all play from there
 
 ## Project Structure
 
-\`\`\`
+```python
 backend/
 ├── src/
 │   ├── routes/          # API route handlers
+│   │   ├── trips.ts
+│   │   ├── courses.ts
+│   │   ├── scores.ts
+│   │   ├── users.ts
+│   │   ├── games.ts     # Game management
+│   │   ├── matches.ts   # Match tracking
+│   │   ├── teams.ts     # Team management
+│   │   └── communities.ts
 │   ├── services/        # Business logic (future)
 │   ├── middleware/      # Express middleware
 │   ├── utils/           # Shared utilities
@@ -196,27 +296,29 @@ backend/
 │   ├── schema.prisma    # Database schema
 │   ├── migrations/      # Version-controlled migrations
 │   └── seed.ts          # Test data seeder
+├── examples/
+│   └── rest/            # REST Client API examples
 ├── package.json
 └── tsconfig.json
-\`\`\`
+```
 
 ## Deployment
 
 ### Production Build
 
-\`\`\`bash
+```bash
 npm run build
 npm start
-\`\`\`
+```
 
 ### Docker
 
-\`\`\`bash
+```bash
 docker build -t lrbapp-backend .
 docker run -p 3001:3001 \\
   -e DATABASE_URL="postgresql://..." \\
   lrbapp-backend
-\`\`\`
+```
 
 ### Environment Variables
 
@@ -234,16 +336,16 @@ When updating the database schema:
 
 1. **Modify** \`prisma/schema.prisma\`
 2. **Create migration**: 
-   \`\`\`bash
+   ```bash
    npx prisma migrate dev --name descriptive_name --url "postgresql://postgres:postgres@postgres:5432/lrbapp?schema=public"
-   \`\`\`
+   ```
 3. **Name it descriptively**: e.g., "add_ctp_tracking"
 4. **Test locally** with seed data: \`npm run db:seed\`
 5. **Commit** migration files to Git
 6. **Deploy** with:
-   \`\`\`bash
+   ```bash
    npx prisma migrate deploy --url "postgresql://postgres:postgres@postgres:5432/lrbapp?schema=public"
-   \`\`\`
+   ```
 
 Prisma tracks migration history to ensure backwards compatibility.
 
@@ -255,16 +357,16 @@ Prisma tracks migration history to ensure backwards compatibility.
 - Verify containers are running: \`docker ps\`
 
 ### Prisma Client out of sync
-\`\`\`bash
+```bash
 npm run db:generate
-\`\`\`
+```
 
 ### Port already in use
-\`\`\`bash
+```bash
 lsof -ti:3001 | xargs kill -9
-\`\`\`
+```
 
 ### View all running services
-\`\`\`bash
+```bash
 docker ps
-\`\`\`
+```

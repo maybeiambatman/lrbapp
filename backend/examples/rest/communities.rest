@@ -1,0 +1,94 @@
+@baseUrl = http://localhost:3001/api
+
+###
+# Get all communities
+GET {{baseUrl}}/communities
+
+###
+# Get active communities only
+GET {{baseUrl}}/communities?isActive=true
+
+###
+# Get single community by ID
+GET {{baseUrl}}/communities/YOUR_COMMUNITY_ID
+
+###
+# Create a new community
+POST {{baseUrl}}/communities
+Content-Type: application/json
+
+{
+  "name": "LRB Golf Club",
+  "description": "Long Range Bomber annual golf trip community",
+  "isActive": true,
+  "createdBy": "YOUR_USER_ID",
+  "memberIds": [
+    "YOUR_USER_ID",
+    "ANOTHER_USER_ID"
+  ]
+}
+
+###
+# Create a minimal community (just creator)
+POST {{baseUrl}}/communities
+Content-Type: application/json
+
+{
+  "name": "Weekend Warriors Golf",
+  "description": "Local weekend golf group",
+  "createdBy": "YOUR_USER_ID"
+}
+
+###
+# Update community details
+PUT {{baseUrl}}/communities/YOUR_COMMUNITY_ID
+Content-Type: application/json
+
+{
+  "name": "Updated Community Name",
+  "description": "Updated description"
+}
+
+###
+# Deactivate a community
+PUT {{baseUrl}}/communities/YOUR_COMMUNITY_ID
+Content-Type: application/json
+
+{
+  "isActive": false
+}
+
+###
+# Reactivate a community
+PUT {{baseUrl}}/communities/YOUR_COMMUNITY_ID
+Content-Type: application/json
+
+{
+  "isActive": true
+}
+
+###
+# Add member to community
+POST {{baseUrl}}/communities/YOUR_COMMUNITY_ID/members
+Content-Type: application/json
+
+{
+  "userId": "USER_ID_TO_ADD"
+}
+
+###
+# Remove member from community
+DELETE {{baseUrl}}/communities/YOUR_COMMUNITY_ID/members/USER_ID_TO_REMOVE
+
+###
+# Delete a community
+DELETE {{baseUrl}}/communities/YOUR_COMMUNITY_ID
+
+###
+# NOTES:
+# - Communities are for recurring golf groups
+# - Creator is automatically added as a member
+# - Members are User objects (not TripPlayers)
+# - Use communities to organize regular golf groups across multiple trips
+# - Inactive communities are archived but not deleted
+# - Members can be added/removed individually after creation

@@ -1,0 +1,132 @@
+@baseUrl = http://localhost:3001/api
+
+###
+# Get all games
+GET {{baseUrl}}/games
+
+###
+# Get games for a specific trip
+GET {{baseUrl}}/games?tripId=YOUR_TRIP_ID
+
+###
+# Get games for a specific round
+GET {{baseUrl}}/games?roundNumber=1
+
+###
+# Get games by format
+GET {{baseUrl}}/games?format=BEST_BALL
+
+###
+# Get active games only
+GET {{baseUrl}}/games?isActive=true
+
+###
+# Get single game by ID
+GET {{baseUrl}}/games/YOUR_GAME_ID
+
+###
+# Get game leaderboard
+GET {{baseUrl}}/games/YOUR_GAME_ID/leaderboard
+
+###
+# Create a new game
+POST {{baseUrl}}/games
+Content-Type: application/json
+
+{
+  "tripId": "YOUR_TRIP_ID",
+  "name": "Best Ball Round 1",
+  "format": "BEST_BALL",
+  "playType": "STROKE_PLAY",
+  "scoringType": "NET",
+  "roundNumber": 1,
+  "buyInAmount": 20,
+  "purseTotal": 80,
+  "isActive": true
+}
+
+###
+# Create a Match Play game
+POST {{baseUrl}}/games
+Content-Type: application/json
+
+{
+  "tripId": "YOUR_TRIP_ID",
+  "name": "Singles Match Play",
+  "format": "COMBINED_SCORE",
+  "playType": "MATCH_PLAY",
+  "scoringType": "GROSS",
+  "roundNumber": 2,
+  "buyInAmount": 25,
+  "purseTotal": 100,
+  "isActive": true
+}
+
+###
+# Create a Nassau game
+POST {{baseUrl}}/games
+Content-Type: application/json
+
+{
+  "tripId": "YOUR_TRIP_ID",
+  "name": "Nassau Round 3",
+  "format": "NASSAU",
+  "playType": "MATCH_PLAY",
+  "scoringType": "BOTH",
+  "roundNumber": 3,
+  "buyInAmount": 30,
+  "purseTotal": 120,
+  "isActive": true
+}
+
+###
+# Create a Skins game
+POST {{baseUrl}}/games
+Content-Type: application/json
+
+{
+  "tripId": "YOUR_TRIP_ID",
+  "name": "Skins Game Round 4",
+  "format": "SKINS",
+  "playType": "STROKE_PLAY",
+  "scoringType": "NET",
+  "roundNumber": 4,
+  "buyInAmount": 15,
+  "purseTotal": 60,
+  "isActive": true
+}
+
+###
+# Update a game
+PUT {{baseUrl}}/games/YOUR_GAME_ID
+Content-Type: application/json
+
+{
+  "purseTotal": 100,
+  "isActive": false
+}
+
+###
+# Delete a game
+DELETE {{baseUrl}}/games/YOUR_GAME_ID
+
+###
+# AVAILABLE GAME FORMATS:
+# - BEST_BALL: Team format where best score on each hole counts
+# - COMBINED_SCORE: Team format where both scores are combined
+# - HIGH_LOW: One high, one low score counts
+# - MONEYBALL: Rotating player whose score counts double
+# - SKINS: Winner takes all for each hole
+# - NASSAU: Three separate bets (front 9, back 9, overall)
+# - SCRAMBLE: Best ball position, all play from there
+
+###
+# PLAY TYPES:
+# - MATCH_PLAY: Head-to-head hole-by-hole competition
+# - STROKE_PLAY: Total score competition
+
+###
+# SCORING TYPES:
+# - GROSS: Actual score without handicap
+# - NET: Score adjusted for handicap
+# - BOTH: Track both gross and net scores

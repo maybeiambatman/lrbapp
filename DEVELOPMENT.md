@@ -26,11 +26,12 @@ npm run dev -- --host
 ### Terminal 3: Prisma Studio (Optional)
 ```bash
 cd backend
-npx prisma studio --port 5555 --url "postgresql://postgres:postgres@postgres:5432/lrbapp?schema=public"
+npx prisma studio --port 5555
 ```
 - Runs at: http://localhost:5555
 - Visual database browser
 - Edit data directly
+- Uses DATABASE_URL from .env file
 
 ## Services Overview
 

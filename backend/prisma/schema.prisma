@@ -22,6 +22,8 @@ model User {
   createdTrips Trip[]        @relation("TripCreator")
   createdCourses Course[]    @relation("CourseCreator")
   scores      RoundScore[]
+  communities Community[]   @relation("CommunityMembers")
+  createdCommunities Community[] @relation("CommunityCreator")
 
   @@index([email])
 }
@@ -30,15 +32,17 @@ model User {
 model Course {
   id        String   @id @default(cuid())
   name      String
+  location  String?
   createdBy String
   createdAt DateTime @default(now())
 
   // Relations
-  creator User   @relation("CourseCreator", fields: [createdBy], references: [id], onDelete: Cascade)
-  holes   Hole[]
-  tees    Tee[]
-  trips   Trip[] @relation("TripCourses")
-  scores  RoundScore[]
+  creator    User         @relation("CourseCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  holes      Hole[]
+  tees       Tee[]
+  trips      Trip[]       @relation("TripCourses")
+  scores     RoundScore[]
+  architects CourseArchitect[]
 
   @@index([createdBy])
 }
@@ -74,6 +78,18 @@ model Tee {
   @@index([courseId])
 }
 
+model CourseArchitect {
+  id        String @id @default(cuid())
+  courseId  String
+  name      String
+  yearBuilt Int?
+
+  // Relations
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([courseId])
+}
+
 // Trip Management
 model Trip {
   id             String   @id @default(cuid())
@@ -95,6 +111,7 @@ model Trip {
   teeTimes TeeTime[]
   prizes   Prize[]
   scores   RoundScore[]
+  games    Game[]
 
   @@index([code])
   @@index([createdBy])
@@ -146,16 +163,9 @@ model Prize {
   @@index([tripId])
 }
 
-enum PrizeType {
-  CLOSEST_TO_PIN
-  BEST_NET_ROUND
-  BEST_CUMULATIVE_NET
-  CUSTOM
-}
-
 // Score Tracking
 model RoundScore {
-  id           String   @id @default(cuid())
+  id           String      @id @default(cuid())
   tripId       String
   playerId     String
   userId       String?
@@ -163,13 +173,14 @@ model RoundScore {
   roundNumber  Int
   courseId     String
   handicap     Float
-  grossTotal   Int      @default(0)
-  netTotal     Int      @default(0)
-  isComplete   Boolean  @default(false)
+  grossTotal   Int         @default(0)
+  netTotal     Int         @default(0)
+  status       RoundStatus @default(NOT_STARTED)
+  isComplete   Boolean     @default(false)
   ctpHole      Int?
   ctpDistance  String?
-  updatedAt    DateTime @updatedAt
-  createdAt    DateTime @default(now())
+  updatedAt    DateTime    @updatedAt
+  createdAt    DateTime    @default(now())
 
   // Relations
   trip   Trip         @relation(fields: [tripId], references: [id], onDelete: Cascade)
@@ -198,4 +209,129 @@ model HoleScore {
 
   @@unique([roundScoreId, holeNumber])
   @@index([roundScoreId])
+}
+
+// Enums
+enum RoundStatus {
+  NOT_STARTED
+  STARTED
+  FINISHED
+  ABANDONED
+}
+
+enum PrizeType {
+  CLOSEST_TO_PIN
+  BEST_NET_ROUND
+  BEST_CUMULATIVE_NET
+  CUSTOM
+}
+
+// Game System
+enum GameFormat {
+  BEST_BALL
+  COMBINED_SCORE
+  HIGH_LOW
+  MONEYBALL
+  SKINS
+  NASSAU
+  SCRAMBLE
+}
+
+enum GamePlayType {
+  MATCH_PLAY
+  STROKE_PLAY
+}
+
+enum GameScoringType {
+  GROSS
+  NET
+  BOTH
+}
+
+enum MatchStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model Game {
+  id          String          @id @default(cuid())
+  tripId      String
+  name        String
+  format      GameFormat
+  playType    GamePlayType
+  scoringType GameScoringType
+  roundNumber Int?
+  buyInAmount Float           @default(0)
+  purseTotal  Float           @default(0)
+  isActive    Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+
+  // Relations
+  trip    Trip          @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  matches Match[]
+  teams   Team[]
+
+  @@index([tripId])
+  @@index([tripId, roundNumber])
+}
+
+model Match {
+  id             String      @id @default(cuid())
+  gameId         String
+  roundNumber    Int
+  status         MatchStatus @default(PENDING)
+  isTeamMatch    Boolean     @default(false)
+  team1Id        String?
+  team2Id        String?
+  player1Id      String?
+  player2Id      String?
+  team1Score     Float?
+  team2Score     Float?
+  player1Score   Float?
+  player2Score   Float?
+  winnerId       String?
+  winnerType     String? // 'team' or 'player'
+  createdAt      DateTime    @default(now())
+
+  // Relations
+  game    Game  @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  team1   Team? @relation("Team1Matches", fields: [team1Id], references: [id], onDelete: SetNull)
+  team2   Team? @relation("Team2Matches", fields: [team2Id], references: [id], onDelete: SetNull)
+
+  @@index([gameId])
+  @@index([roundNumber])
+}
+
+model Team {
+  id        String   @id @default(cuid())
+  gameId    String
+  name      String
+  playerIds String[] // Array of TripPlayer IDs
+  createdAt DateTime @default(now())
+
+  // Relations
+  game           Game    @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  team1Matches   Match[] @relation("Team1Matches")
+  team2Matches   Match[] @relation("Team2Matches")
+
+  @@index([gameId])
+}
+
+// Community Feature
+model Community {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  isActive    Boolean  @default(true)
+  createdBy   String
+  createdAt   DateTime @default(now())
+
+  // Relations
+  creator User   @relation("CommunityCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  members User[] @relation("CommunityMembers")
+
+  @@index([createdBy])
+  @@index([isActive])
 }

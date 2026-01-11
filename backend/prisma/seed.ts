@@ -128,6 +128,129 @@ async function main() {
   });
 
   console.log('✅ Created trip:', trip.name, 'with code:', trip.code);
+
+  // Get players for game setup
+  const players = await prisma.tripPlayer.findMany({
+    where: { tripId: trip.id },
+  });
+
+  // Create a community
+  const community = await prisma.community.create({
+    data: {
+      name: 'LRB Golf Club',
+      description: 'Long Range Bomber annual golf trip community',
+      isActive: true,
+      createdBy: admin.id,
+      members: {
+        connect: [{ id: admin.id }],
+      },
+    },
+  });
+
+  console.log('✅ Created community:', community.name);
+
+  // Create a Best Ball game (stroke play, net scoring)
+  const bestBallGame = await prisma.game.create({
+    data: {
+      tripId: trip.id,
+      name: 'Best Ball Round 1',
+      format: 'BEST_BALL',
+      playType: 'STROKE_PLAY',
+      scoringType: 'NET',
+      roundNumber: 1,
+      buyInAmount: 20,
+      purseTotal: 80,
+      isActive: true,
+      teams: {
+        create: [
+          {
+            name: 'Team Tiger & Rory',
+            playerIds: [players[0].id, players[2].id], // Tiger & Rory
+          },
+          {
+            name: 'Team Phil & Jordan',
+            playerIds: [players[1].id, players[3].id], // Phil & Jordan
+          },
+        ],
+      },
+    },
+    include: {
+      teams: true,
+    },
+  });
+
+  console.log('✅ Created Best Ball game with teams');
+
+  // Create match for the Best Ball game
+  await prisma.match.create({
+    data: {
+      gameId: bestBallGame.id,
+      roundNumber: 1,
+      status: 'PENDING',
+      isTeamMatch: true,
+      team1Id: bestBallGame.teams[0].id,
+      team2Id: bestBallGame.teams[1].id,
+    },
+  });
+
+  console.log('✅ Created match for Best Ball game');
+
+  // Create a Match Play game (individual, gross scoring)
+  const matchPlayGame = await prisma.game.create({
+    data: {
+      tripId: trip.id,
+      name: 'Singles Match Play Round 2',
+      format: 'COMBINED_SCORE',
+      playType: 'MATCH_PLAY',
+      scoringType: 'GROSS',
+      roundNumber: 2,
+      buyInAmount: 25,
+      purseTotal: 100,
+      isActive: true,
+    },
+  });
+
+  // Create individual matches for Match Play
+  await prisma.match.createMany({
+    data: [
+      {
+        gameId: matchPlayGame.id,
+        roundNumber: 2,
+        status: 'PENDING',
+        isTeamMatch: false,
+        player1Id: players[0].id, // Tiger vs Phil
+        player2Id: players[1].id,
+      },
+      {
+        gameId: matchPlayGame.id,
+        roundNumber: 2,
+        status: 'PENDING',
+        isTeamMatch: false,
+        player1Id: players[2].id, // Rory vs Jordan
+        player2Id: players[3].id,
+      },
+    ],
+  });
+
+  console.log('✅ Created Match Play game with individual matches');
+
+  // Create a Nassau game (round 3)
+  await prisma.game.create({
+    data: {
+      tripId: trip.id,
+      name: 'Nassau Round 3',
+      format: 'NASSAU',
+      playType: 'MATCH_PLAY',
+      scoringType: 'BOTH',
+      roundNumber: 3,
+      buyInAmount: 30,
+      purseTotal: 120,
+      isActive: true,
+    },
+  });
+
+  console.log('✅ Created Nassau game');
+
   console.log('🎉 Seeding completed!');
 }
 

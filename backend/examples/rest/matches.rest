@@ -1,0 +1,146 @@
+@baseUrl = http://localhost:3001/api
+
+###
+# Get all matches
+GET {{baseUrl}}/matches
+
+###
+# Get matches for a specific game
+GET {{baseUrl}}/matches?gameId=YOUR_GAME_ID
+
+###
+# Get matches for a specific round
+GET {{baseUrl}}/matches?roundNumber=1
+
+###
+# Get matches by status
+GET {{baseUrl}}/matches?status=PENDING
+
+###
+# Get team matches only
+GET {{baseUrl}}/matches?isTeamMatch=true
+
+###
+# Get individual matches only
+GET {{baseUrl}}/matches?isTeamMatch=false
+
+###
+# Get single match by ID
+GET {{baseUrl}}/matches/YOUR_MATCH_ID
+
+###
+# Create a team match
+POST {{baseUrl}}/matches
+Content-Type: application/json
+
+{
+  "gameId": "YOUR_GAME_ID",
+  "roundNumber": 1,
+  "status": "PENDING",
+  "isTeamMatch": true,
+  "team1Id": "YOUR_TEAM1_ID",
+  "team2Id": "YOUR_TEAM2_ID"
+}
+
+###
+# Create an individual match
+POST {{baseUrl}}/matches
+Content-Type: application/json
+
+{
+  "gameId": "YOUR_GAME_ID",
+  "roundNumber": 2,
+  "status": "PENDING",
+  "isTeamMatch": false,
+  "player1Id": "YOUR_PLAYER1_ID",
+  "player2Id": "YOUR_PLAYER2_ID"
+}
+
+###
+# Update match status to in progress
+PUT {{baseUrl}}/matches/YOUR_MATCH_ID
+Content-Type: application/json
+
+{
+  "status": "IN_PROGRESS"
+}
+
+###
+# Update match scores (team match)
+PUT {{baseUrl}}/matches/YOUR_MATCH_ID
+Content-Type: application/json
+
+{
+  "team1Score": 3.5,
+  "team2Score": 2.5,
+  "status": "IN_PROGRESS"
+}
+
+###
+# Update match scores (individual match)
+PUT {{baseUrl}}/matches/YOUR_MATCH_ID
+Content-Type: application/json
+
+{
+  "player1Score": 72,
+  "player2Score": 75,
+  "status": "IN_PROGRESS"
+}
+
+###
+# Complete a match (automatically determines winner for team match)
+POST {{baseUrl}}/matches/YOUR_MATCH_ID/complete
+Content-Type: application/json
+
+{
+  "team1Score": 4.5,
+  "team2Score": 3.5
+}
+
+###
+# Complete a match (individual match)
+POST {{baseUrl}}/matches/YOUR_MATCH_ID/complete
+Content-Type: application/json
+
+{
+  "player1Score": 68,
+  "player2Score": 72
+}
+
+###
+# Manually set match winner
+PUT {{baseUrl}}/matches/YOUR_MATCH_ID
+Content-Type: application/json
+
+{
+  "status": "COMPLETED",
+  "winnerId": "YOUR_TEAM_OR_PLAYER_ID",
+  "winnerType": "team"
+}
+
+###
+# Cancel a match
+PUT {{baseUrl}}/matches/YOUR_MATCH_ID
+Content-Type: application/json
+
+{
+  "status": "CANCELLED"
+}
+
+###
+# Delete a match
+DELETE {{baseUrl}}/matches/YOUR_MATCH_ID
+
+###
+# MATCH STATUSES:
+# - PENDING: Not yet started
+# - IN_PROGRESS: Currently being played
+# - COMPLETED: Finished with result
+# - CANCELLED: Match was cancelled
+
+###
+# NOTES:
+# - For stroke play: scores are total strokes
+# - For match play: scores are holes won (can be fractional for ties)
+# - winnerType should be either 'team' or 'player' depending on match type
+# - Use the /complete endpoint to automatically determine winner based on scores
