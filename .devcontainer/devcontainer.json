@@ -40,7 +40,8 @@
         "dsznajder.es7-react-js-snippets",
         "usernamehm.errorlens",
         "Prisma.prisma",
-        "mtxr.sqltools"
+        "mtxr.sqltools",
+        "humao.rest-client"
       ]
     }
   },

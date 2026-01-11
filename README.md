@@ -7,39 +7,53 @@ A production-ready full-stack web application for managing golf trips with playe
 **Monorepo Structure:**
 - `backend/` - Express API with Prisma ORM and PostgreSQL
 - `src/` - React frontend with TypeScript and Vite
-- `docker-compose.yml` - Full-stack development environment
+- `.devcontainer/` - VS Code dev container with PostgreSQL
 
-## Quick Start
+## Quick Start (Dev Container)
 
-### Option 1: Docker Compose (Recommended)
+This project uses VS Code Dev Containers. When you open the project, VS Code will prompt you to "Reopen in Container". This automatically sets up:
+- Node.js 20
+- PostgreSQL 16 (running on `postgres:5432`)
+- All required VS Code extensions
 
-Start all services (PostgreSQL, Backend API, Frontend):
+### Start Full-Stack Development
 
-```bash
-docker-compose up
-```
+Open **3 terminals** in VS Code and run:
 
-- Frontend: http://localhost:5173
-- Backend API: http://localhost:3001
-- PostgreSQL: localhost:5432
-
-### Option 2: Manual Setup
-
-**Backend:**
+**Terminal 1 - Backend API:**
 ```bash
 cd backend
-npm install
-cp .env.example .env
-npm run db:migrate
-npm run db:seed
 npm run dev
 ```
+→ API runs at http://localhost:3001
 
-**Frontend:**
+**Terminal 2 - Frontend:**
 ```bash
-npm install
 npm run dev -- --host
 ```
+→ App runs at http://localhost:5173
+
+**Terminal 3 - Prisma Studio (Optional):**
+```bash
+cd backend
+npx prisma studio --port 5555 --url "postgresql://postgres:postgres@postgres:5432/lrbapp?schema=public"
+```
+→ Database UI at http://localhost:5555
+
+### First Time Setup
+
+Run migrations and seed the database:
+
+```bash
+cd backend
+npx prisma migrate dev --url "postgresql://postgres:postgres@postgres:5432/lrbapp?schema=public"
+npm run db:seed
+```
+
+**Seed data:**
+- Admin: `admin@golf.com`
+- Sample Trip Code: `MSTR26`
+- 4 players with Augusta National course
 
 ## Development
 

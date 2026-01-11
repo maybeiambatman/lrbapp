@@ -1,0 +1,68 @@
+@baseUrl = http://localhost:3001
+@tripId = your-trip-id-here
+@playerId = your-player-id-here
+@courseId = your-course-id-here
+@scoreId = your-score-id-here
+
+### Get scores for a trip (all rounds)
+GET {{baseUrl}}/api/scores/trip/{{tripId}}
+
+### Get scores for a specific round
+GET {{baseUrl}}/api/scores/trip/{{tripId}}?round=1
+
+### Get player's scores across trips
+GET {{baseUrl}}/api/scores/player/{{playerId}}
+
+### Submit a complete round score
+POST {{baseUrl}}/api/scores
+Content-Type: application/json
+
+{
+  "tripId": "{{tripId}}",
+  "playerId": "{{playerId}}",
+  "playerName": "Tiger Woods",
+  "roundNumber": 1,
+  "courseId": "{{courseId}}",
+  "handicap": 0.5,
+  "grossTotal": 72,
+  "netTotal": 72,
+  "isComplete": true,
+  "holes": [
+    { "holeNumber": 1, "grossScore": 4, "netScore": 4, "strokesReceived": 0 },
+    { "holeNumber": 2, "grossScore": 5, "netScore": 5, "strokesReceived": 0 },
+    { "holeNumber": 3, "grossScore": 4, "netScore": 4, "strokesReceived": 0 },
+    { "holeNumber": 4, "grossScore": 3, "netScore": 3, "strokesReceived": 0 },
+    { "holeNumber": 5, "grossScore": 4, "netScore": 4, "strokesReceived": 0 },
+    { "holeNumber": 6, "grossScore": 3, "netScore": 3, "strokesReceived": 0 },
+    { "holeNumber": 7, "grossScore": 4, "netScore": 4, "strokesReceived": 0 },
+    { "holeNumber": 8, "grossScore": 5, "netScore": 5, "strokesReceived": 0 },
+    { "holeNumber": 9, "grossScore": 4, "netScore": 4, "strokesReceived": 0 },
+    { "holeNumber": 10, "grossScore": 4, "netScore": 4, "strokesReceived": 0 },
+    { "holeNumber": 11, "grossScore": 4, "netScore": 4, "strokesReceived": 0 },
+    { "holeNumber": 12, "grossScore": 3, "netScore": 3, "strokesReceived": 0 },
+    { "holeNumber": 13, "grossScore": 5, "netScore": 5, "strokesReceived": 0 },
+    { "holeNumber": 14, "grossScore": 4, "netScore": 4, "strokesReceived": 0 },
+    { "holeNumber": 15, "grossScore": 5, "netScore": 5, "strokesReceived": 0 },
+    { "holeNumber": 16, "grossScore": 3, "netScore": 3, "strokesReceived": 0 },
+    { "holeNumber": 17, "grossScore": 4, "netScore": 4, "strokesReceived": 0 },
+    { "holeNumber": 18, "grossScore": 4, "netScore": 4, "strokesReceived": 0 }
+  ],
+  "ctpHole": 16,
+  "ctpDistance": "8'3\""
+}
+
+### Update an existing score
+POST {{baseUrl}}/api/scores
+Content-Type: application/json
+
+{
+  "tripId": "{{tripId}}",
+  "playerId": "{{playerId}}",
+  "roundNumber": 1,
+  "grossTotal": 75,
+  "netTotal": 75,
+  "isComplete": true
+}
+
+### Delete a score
+DELETE {{baseUrl}}/api/scores/{{scoreId}}
