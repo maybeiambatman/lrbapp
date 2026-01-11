@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  app:
+    image: mcr.microsoft.com/devcontainers/javascript-node:1-20-bullseye
+    container_name: lrbapp-devcontainer
+    volumes:
+      - ..:/workspace:cached
+    command: sleep infinity
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/lrbapp?schema=public
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - '5173:5173'
+      - '4173:4173'
+      - '3001:3001'
+      - '5432:5432'
+      - '5555:5555'
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: lrbapp-postgres-dev
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: lrbapp
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

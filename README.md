@@ -1,87 +1,164 @@
 # Golf Trip Manager
 
-A comprehensive web application for managing golf trips, including player rosters, tee times, scoring, leaderboards, and prize purses.
+A production-ready full-stack web application for managing golf trips with player rosters, tee times, live scoring, leaderboards, and prize purses.
+
+## Architecture
+
+**Monorepo Structure:**
+- `backend/` - Express API with Prisma ORM and PostgreSQL
+- `src/` - React frontend with TypeScript and Vite
+- `docker-compose.yml` - Full-stack development environment
 
 ## Quick Start
 
-### Development
+### Option 1: Docker Compose (Recommended)
 
-1. **Install dependencies**:
-   ```bash
-   npm install
-   ```
-
-2. **Start the development server**:
-   
-   - **In a dev container or Docker**: Use the `--host` flag to expose the server:
-     ```bash
-     npm run dev -- --host
-     ```
-   
-   - **Local development**: Standard command works fine:
-     ```bash
-     npm run dev
-     ```
-
-3. **Access the application**:
-   - Local: http://localhost:5173/
-   - Container: VS Code will auto-forward port 5173 (check the "Ports" tab)
-
-The dev server includes Hot Module Replacement (HMR), so changes will automatically reload in your browser.
-
-### Build for Production
+Start all services (PostgreSQL, Backend API, Frontend):
 
 ```bash
-npm run build
+docker-compose up
 ```
 
-### Preview Production Build
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:3001
+- PostgreSQL: localhost:5432
+
+### Option 2: Manual Setup
+
+**Backend:**
+```bash
+cd backend
+npm install
+cp .env.example .env
+npm run db:migrate
+npm run db:seed
+npm run dev
+```
+
+**Frontend:**
+```bash
+npm install
+npm run dev -- --host
+```
+
+## Development
+
+### Database Management
 
 ```bash
-npm run preview
+cd backend
+
+# Run migrations
+npm run db:migrate
+
+# Seed test data
+npm run db:seed
+
+# Open Prisma Studio (visual DB browser)
+npm run db:studio
 ```
 
-## Tech Stack
+**Seed Data:**
+- Admin: `admin@golf.com`
+- Sample Trip Code: `MSTR26`
+- 4 test players with Augusta National course
 
-This application is built with:
+**Seed Data:**
+- Admin: `admin@golf.com`
+- Sample Trip Code: `MSTR26`
+- 4 test players with Augusta National course
 
-- **React 19** - UI framework
-- **TypeScript** - Type safety
-- **Vite** - Build tool with HMR
-- **Tailwind CSS 4** - Styling
-- **Zustand** - State management
-- **React Router** - Navigation
-- **Firebase** - Backend services (planned)
-- **Tesseract.js** - OCR for scorecard parsing
+### Tech Stack
+
+**Backend:**
+- Express.js - REST API
+- Prisma - ORM with migrations
+- PostgreSQL - Database
+- TypeScript - Type safety
+
+**Frontend:**
+- React 19 - UI framework
+- TypeScript - Type safety
+- Vite - Build tool with HMR
+- Tailwind CSS 4 - Styling
+- Zustand - State management (migrating to API)
+- React Router - Navigation
+
+### Container Development
+
+When running in a dev container/Codespace, use the `--host` flag:
+
+```bash
+npm run dev -- --host
+```
+
+This ensures Vite binds to `0.0.0.0` for proper port forwarding.
 
 ## Project Structure
 
 ```
-src/
-├── components/
-│   └── common/        # Reusable UI components (Button, Card, Input, etc.)
-├── config/            # Configuration files (Firebase, etc.)
-├── pages/             # Page components
-│   ├── admin/         # Admin dashboard, course/trip management
-│   └── user/          # User-facing pages (leaderboard, scoring, etc.)
-├── store/             # Zustand store for state management
-├── types/             # TypeScript type definitions
-└── utils/             # Utility functions (handicap, leaderboard, OCR parsing)
+├── backend/              # API Server
+│   ├── src/
+│   │   ├── routes/       # API endpoints
+│   │   ├── middleware/   # Error handling, etc.
+│   │   └── server.ts     # Express app
+│   ├── prisma/
+│   │   ├── schema.prisma # Database schema
+│   │   ├── migrations/   # Schema versions
+│   │   └── seed.ts       # Test data
+│   └── package.json
+├── src/                  # React Frontend
+│   ├── components/
+│   ├── pages/
+│   ├── store/            # State management
+│   ├── types/            # TypeScript types
+│   └── utils/
+├── docker-compose.yml    # Full-stack dev environment
+└── README.md
 ```
 
-## Important Notes for Development
+## API Documentation
 
-### Container/Codespace Development
-When running in a dev container or GitHub Codespace, **always use the `--host` flag** with the dev server:
+See [backend/README.md](backend/README.md) for full API documentation.
+
+**Key Endpoints:**
+- `GET /api/trips/code/:code` - Join trip by code
+- `GET /api/courses` - List courses
+- `POST /api/scores` - Submit scores
+- `GET /api/scores/trip/:id` - Leaderboard data
+
+## Database Schema
+
+Key entities:
+- **User** - Admin users
+- **Trip** - Golf trip with code, dates, buy-in
+- **TripPlayer** - Players on a trip
+- **Course** - Golf courses with holes and tees
+- **RoundScore** - Player scores per round
+- **Prize** - Prize pool allocations
+
+See [backend/prisma/schema.prisma](backend/prisma/schema.prisma) for full schema.
+
+## Deployment
+
+### Backend
+
 ```bash
-npm run dev -- --host
+cd backend
+npm run build
+DATABASE_URL="postgresql://..." npm start
 ```
-This ensures Vite binds to `0.0.0.0` instead of just `localhost`, allowing proper port forwarding.
 
-### Port Forwarding
-- Port 5173 should automatically forward in VS Code
-- Check the "Ports" tab (next to Terminal) if you can't access the app
-- Click the globe icon or local address to open in your browser
+### Frontend
+
+```bash
+npm run build
+npm run preview
+```
+
+## Contributing
+
+See [.github/AGENT.md](.github/AGENT.md) for development guidelines.
 
 ## React Compiler
 
