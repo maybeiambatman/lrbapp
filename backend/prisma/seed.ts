@@ -8,7 +8,6 @@ type TeeData = {
   color: string;
   rating: number;
   slope: number;
-  yardage: number;
   holes: { yards: number; handicapRank: number }[];
 };
 
@@ -44,7 +43,6 @@ async function createCourse(courseData: CourseData, createdBy: string) {
         color: teeData.color,
         rating: teeData.rating,
         slope: teeData.slope,
-        yardage: teeData.yardage,
       },
     });
 
@@ -133,7 +131,6 @@ async function main() {
           color: 'Green',
           rating: 76.5,
           slope: 155,
-          yardage: 7545,
           holes: [
             { yards: 445, handicapRank: 7 },
             { yards: 575, handicapRank: 15 },
@@ -160,7 +157,6 @@ async function main() {
           color: 'Blue',
           rating: 74.7,
           slope: 148,
-          yardage: 7200,
           holes: [
             { yards: 420, handicapRank: 7 },
             { yards: 550, handicapRank: 15 },
@@ -187,7 +183,6 @@ async function main() {
           color: 'White',
           rating: 72.3,
           slope: 137,
-          yardage: 6705,
           holes: [
             { yards: 370, handicapRank: 7 },
             { yards: 520, handicapRank: 15 },
@@ -226,7 +221,6 @@ async function main() {
           color: 'Black',
           rating: 75.5,
           slope: 145,
-          yardage: 7040,
           holes: [
             { yards: 380, handicapRank: 13 },
             { yards: 505, handicapRank: 9 },
@@ -253,7 +247,6 @@ async function main() {
           color: 'Blue',
           rating: 73.4,
           slope: 142,
-          yardage: 6828,
           holes: [
             { yards: 360, handicapRank: 13 },
             { yards: 485, handicapRank: 9 },
@@ -292,7 +285,6 @@ async function main() {
           color: 'Black',
           rating: 76.3,
           slope: 155,
-          yardage: 7057,
           holes: [
             { yards: 427, handicapRank: 9 },
             { yards: 599, handicapRank: 1 },
@@ -319,7 +311,6 @@ async function main() {
           color: 'White',
           rating: 73.9,
           slope: 145,
-          yardage: 6656,
           holes: [
             { yards: 397, handicapRank: 9 },
             { yards: 559, handicapRank: 1 },

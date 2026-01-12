@@ -19,11 +19,28 @@ router.get('/', async (req, res, next) => {
             },
           },
         },
-        tees: true,
+        tees: {
+          include: {
+            holes: true,
+          },
+        },
       },
       orderBy: { name: 'asc' },
     });
-    res.json(courses);
+
+    // Add computed totalYardage to each tee
+    const coursesWithYardage = courses.map(course => ({
+      ...course,
+      tees: course.tees.map(tee => {
+        const { holes, ...teeData } = tee;
+        return {
+          ...teeData,
+          totalYardage: holes.reduce((sum, hole) => sum + hole.yards, 0),
+        };
+      }),
+    }));
+
+    res.json(coursesWithYardage);
   } catch (error) {
     next(error);
   }
@@ -45,15 +62,31 @@ router.get('/:id', async (req, res, next) => {
             },
           },
         },
-        tees: true,
+        tees: {
+          include: {
+            holes: true,
+          },
+        },
       },
     });
     
     if (!course) {
       throw new AppError(404, 'Course not found');
     }
+
+    // Add computed totalYardage to each tee
+    const courseWithYardage = {
+      ...course,
+      tees: course.tees.map(tee => {
+        const { holes, ...teeData } = tee;
+        return {
+          ...teeData,
+          totalYardage: holes.reduce((sum, hole) => sum + hole.yards, 0),
+        };
+      }),
+    };
     
-    res.json(course);
+    res.json(courseWithYardage);
   } catch (error) {
     next(error);
   }
@@ -81,11 +114,27 @@ router.post('/', async (req, res, next) => {
             },
           },
         },
-        tees: true,
+        tees: {
+          include: {
+            holes: true,
+          },
+        },
       },
     });
+
+    // Add computed totalYardage to each tee
+    const courseWithYardage = {
+      ...course,
+      tees: course.tees.map(tee => {
+        const { holes, ...teeData } = tee;
+        return {
+          ...teeData,
+          totalYardage: holes.reduce((sum, hole) => sum + hole.yards, 0),
+        };
+      }),
+    };
     
-    res.status(201).json(course);
+    res.status(201).json(courseWithYardage);
   } catch (error) {
     next(error);
   }
@@ -108,10 +157,27 @@ router.put('/:id', async (req, res, next) => {
             },
           },
         },
-        tees: true,
+        tees: {
+          include: {
+            holes: true,
+          },
+        },
       },
     });
-    res.json(course);
+
+    // Add computed totalYardage to each tee
+    const courseWithYardage = {
+      ...course,
+      tees: course.tees.map(tee => {
+        const { holes, ...teeData } = tee;
+        return {
+          ...teeData,
+          totalYardage: holes.reduce((sum, hole) => sum + hole.yards, 0),
+        };
+      }),
+    };
+
+    res.json(courseWithYardage);
   } catch (error) {
     next(error);
   }

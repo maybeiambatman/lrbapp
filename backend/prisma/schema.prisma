@@ -69,7 +69,6 @@ model Tee {
   color    String?
   rating   Float
   slope    Int
-  yardage  Int? // Total course yardage from this tee
 
   // Relations
   course Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
@@ -188,7 +187,7 @@ model RoundScore {
   playerName   String
   roundNumber  Int
   courseId     String
-  handicap     Float
+  handicap     Float  // Handicap for this round
   grossTotal   Int         @default(0)
   netTotal     Int         @default(0)
   status       RoundStatus @default(NOT_STARTED)

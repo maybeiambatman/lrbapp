@@ -4,7 +4,7 @@
 GET {{baseUrl}}/api/courses
 
 ### Get course by ID (update with actual ID)
-@courseId = your-course-id-here
+@courseId = cmka8zbed0005mrxzcpki15t5
 GET {{baseUrl}}/api/courses/{{courseId}}
 
 ### Create a new course
