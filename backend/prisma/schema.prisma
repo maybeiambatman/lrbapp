@@ -48,16 +48,15 @@ model Course {
 }
 
 model Hole {
-  id           String @id @default(cuid())
-  courseId     String
-  number       Int
-  par          Int
-  handicapRank Int // 1-18 for stroke allocation
-  yards        Int?
+  id       String @id @default(cuid())
+  courseId String
+  number   Int
+  par      Int
 
   // Relations
-  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  course     Course      @relation(fields: [courseId], references: [id], onDelete: Cascade)
   holeScores HoleScore[]
+  teeHoles   TeeHole[]
 
   @@unique([courseId, number])
   @@index([courseId])
@@ -70,12 +69,29 @@ model Tee {
   color    String?
   rating   Float
   slope    Int
-  yardage  Int?
+  yardage  Int? // Total course yardage from this tee
 
   // Relations
-  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  course Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  holes  TeeHole[]
 
   @@index([courseId])
+}
+
+model TeeHole {
+  id           String @id @default(cuid())
+  teeId        String
+  holeId       String
+  yards        Int
+  handicapRank Int // 1-18 for stroke allocation from this tee
+
+  // Relations
+  tee  Tee  @relation(fields: [teeId], references: [id], onDelete: Cascade)
+  hole Hole @relation(fields: [holeId], references: [id], onDelete: Cascade)
+
+  @@unique([teeId, holeId])
+  @@index([teeId])
+  @@index([holeId])
 }
 
 model CourseArchitect {

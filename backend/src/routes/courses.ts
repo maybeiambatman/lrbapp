@@ -9,7 +9,16 @@ router.get('/', async (req, res, next) => {
   try {
     const courses = await prisma.course.findMany({
       include: {
-        holes: { orderBy: { number: 'asc' } },
+        holes: {
+          orderBy: { number: 'asc' },
+          include: {
+            teeHoles: {
+              include: {
+                tee: true,
+              },
+            },
+          },
+        },
         tees: true,
       },
       orderBy: { name: 'asc' },
@@ -26,7 +35,16 @@ router.get('/:id', async (req, res, next) => {
     const course = await prisma.course.findUnique({
       where: { id: req.params.id },
       include: {
-        holes: { orderBy: { number: 'asc' } },
+        holes: {
+          orderBy: { number: 'asc' },
+          include: {
+            teeHoles: {
+              include: {
+                tee: true,
+              },
+            },
+          },
+        },
         tees: true,
       },
     });
@@ -53,7 +71,16 @@ router.post('/', async (req, res, next) => {
         tees: { create: tees },
       },
       include: {
-        holes: { orderBy: { number: 'asc' } },
+        holes: {
+          orderBy: { number: 'asc' },
+          include: {
+            teeHoles: {
+              include: {
+                tee: true,
+              },
+            },
+          },
+        },
         tees: true,
       },
     });
@@ -71,7 +98,16 @@ router.put('/:id', async (req, res, next) => {
       where: { id: req.params.id },
       data: req.body,
       include: {
-        holes: { orderBy: { number: 'asc' } },
+        holes: {
+          orderBy: { number: 'asc' },
+          include: {
+            teeHoles: {
+              include: {
+                tee: true,
+              },
+            },
+          },
+        },
         tees: true,
       },
     });
