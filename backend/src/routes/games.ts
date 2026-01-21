@@ -1,14 +1,14 @@
 import express from 'express';
 import prisma from '../utils/prisma.js';
-import { GameFormat } from '@prisma/client';
+import { GameFormat, GameStatus } from '@prisma/client';
 
 interface Standing {
   id: string;
   name: string;
   type: string;
-  matches: number;
+  gamesPlayed: number;
   wins: number;
-  score: number;
+  totalScore: number;
 }
 
 const router = express.Router();
@@ -16,49 +16,45 @@ const router = express.Router();
 // Get all games
 router.get('/', async (req, res, next) => {
   try {
-    const { tripId, roundNumber, format, isActive } = req.query;
+    const { format, isActive, status, isTeamGame } = req.query;
     
     const games = await prisma.game.findMany({
       where: {
-        ...(tripId && { tripId: tripId as string }),
-        ...(roundNumber && { roundNumber: parseInt(roundNumber as string) }),
         ...(format && { format: format as GameFormat }),
         ...(isActive !== undefined && { isActive: isActive === 'true' }),
+        ...(status && { status: status as GameStatus }),
+        ...(isTeamGame !== undefined && { isTeamGame: isTeamGame === 'true' }),
       },
       include: {
-        trip: {
-          select: {
-            id: true,
-            name: true,
-            code: true,
-          },
-        },
-        teams: {
+        teams: true,
+        team1: true,
+        team2: true,
+        rounds: {
           include: {
-            game: {
+            round: {
               select: {
-                name: true,
+                id: true,
+                date: true,
+                player: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
               },
             },
           },
         },
-        matches: {
-          include: {
-            team1: true,
-            team2: true,
-          },
-        },
         _count: {
           select: {
-            matches: true,
+            rounds: true,
             teams: true,
           },
         },
       },
-      orderBy: [
-        { roundNumber: 'asc' },
-        { createdAt: 'desc' },
-      ],
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
 
     res.json(games);
@@ -75,14 +71,30 @@ router.get('/:id', async (req, res, next) => {
     const game = await prisma.game.findUnique({
       where: { id },
       include: {
-        trip: true,
         teams: true,
-        matches: {
+        team1: true,
+        team2: true,
+        rounds: {
           include: {
-            team1: true,
-            team2: true,
+            round: {
+              include: {
+                player: true,
+                course: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+                scores: {
+                  include: {
+                    holes: true,
+                  },
+                },
+              },
+            },
           },
         },
+        prizes: true,
       },
     });
 
@@ -90,9 +102,9 @@ router.get('/:id', async (req, res, next) => {
       return res.status(404).json({ error: 'Game not found' });
     }
 
-    res.json(game);
+    return res.json(game);
   } catch (error) {
-    next(error);
+    return next(error);
   }
 });
 
@@ -100,31 +112,43 @@ router.get('/:id', async (req, res, next) => {
 router.post('/', async (req, res, next) => {
   try {
     const {
-      tripId,
       name,
       format,
       playType,
       scoringType,
-      roundNumber,
       buyInAmount = 0,
-      purseTotal = 0,
       isActive = true,
+      isTeamGame = false,
+      roundIds = [], // Array of round IDs to link to this game
+      teams = [], // Array of team objects: { name, playerIds }
     } = req.body;
 
     const game = await prisma.game.create({
       data: {
-        tripId,
         name,
         format,
         playType,
         scoringType,
-        roundNumber,
         buyInAmount,
-        purseTotal,
         isActive,
+        isTeamGame,
+        status: 'PENDING',
+        rounds: {
+          create: roundIds.map((roundId: string) => ({
+            roundId,
+          })),
+        },
+        teams: {
+          create: teams,
+        },
       },
       include: {
-        trip: true,
+        teams: true,
+        rounds: {
+          include: {
+            round: true,
+          },
+        },
       },
     });
 
@@ -143,10 +167,11 @@ router.put('/:id', async (req, res, next) => {
       format,
       playType,
       scoringType,
-      roundNumber,
       buyInAmount,
-      purseTotal,
       isActive,
+      status,
+      winnerId,
+      winnerType,
     } = req.body;
 
     const game = await prisma.game.update({
@@ -156,15 +181,21 @@ router.put('/:id', async (req, res, next) => {
         ...(format !== undefined && { format }),
         ...(playType !== undefined && { playType }),
         ...(scoringType !== undefined && { scoringType }),
-        ...(roundNumber !== undefined && { roundNumber }),
         ...(buyInAmount !== undefined && { buyInAmount }),
-        ...(purseTotal !== undefined && { purseTotal }),
         ...(isActive !== undefined && { isActive }),
+        ...(status !== undefined && { status }),
+        ...(winnerId !== undefined && { winnerId }),
+        ...(winnerType !== undefined && { winnerType }),
       },
       include: {
-        trip: true,
         teams: true,
-        matches: true,
+        team1: true,
+        team2: true,
+        rounds: {
+          include: {
+            round: true,
+          },
+        },
       },
     });
 
@@ -197,10 +228,21 @@ router.get('/:id/leaderboard', async (req, res, next) => {
     const game = await prisma.game.findUnique({
       where: { id },
       include: {
-        matches: {
+        teams: true,
+        team1: true,
+        team2: true,
+        rounds: {
           include: {
-            team1: true,
-            team2: true,
+            round: {
+              include: {
+                player: true,
+                scores: {
+                  include: {
+                    holes: true,
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -210,56 +252,64 @@ router.get('/:id/leaderboard', async (req, res, next) => {
       return res.status(404).json({ error: 'Game not found' });
     }
 
-    // Calculate standings based on match results
-    const standings = game.matches.reduce((acc: Standing[], match) => {
-      if (match.isTeamMatch) {
-        // Team match standings
-        if (match.team1 && match.team1Id) {
-          const existing = acc.find(s => s.id === match.team1Id);
-          if (existing) {
-            existing.matches++;
-            if (match.winnerId === match.team1Id) existing.wins++;
-            if (match.status === 'COMPLETED') existing.score += (match.team1Score || 0);
-          } else {
-            acc.push({
-              id: match.team1Id,
-              name: match.team1.name,
-              type: 'team',
-              matches: 1,
-              wins: match.winnerId === match.team1Id ? 1 : 0,
-              score: match.team1Score || 0,
-            });
-          }
-        }
-        if (match.team2 && match.team2Id) {
-          const existing = acc.find(s => s.id === match.team2Id);
-          if (existing) {
-            existing.matches++;
-            if (match.winnerId === match.team2Id) existing.wins++;
-            if (match.status === 'COMPLETED') existing.score += (match.team2Score || 0);
-          } else {
-            acc.push({
-              id: match.team2Id,
-              name: match.team2.name,
-              type: 'team',
-              matches: 1,
-              wins: match.winnerId === match.team2Id ? 1 : 0,
-              score: match.team2Score || 0,
-            });
-          }
-        }
-      }
-      return acc;
-    }, []);
+    // Calculate standings based on round scores
+    const standings: Standing[] = [];
 
-    standings.sort((a, b) => b.wins - a.wins || b.score - a.score);
+    if (game.isTeamGame && game.teams.length > 0) {
+      // Team-based game - aggregate team scores
+      game.teams.forEach(team => {
+        const teamRounds = game.rounds.filter(gr => 
+          team.playerIds.includes(gr.round.playerId)
+        );
+        
+        const totalScore = teamRounds.reduce((sum, gr) => {
+          const roundScore = gr.round.scores[0]; // Assuming one score per round
+          return sum + (roundScore?.netTotal || roundScore?.grossTotal || 0);
+        }, 0);
 
-    res.json({
+        standings.push({
+          id: team.id,
+          name: team.name,
+          type: 'team',
+          gamesPlayed: 1,
+          wins: game.winnerId === team.id ? 1 : 0,
+          totalScore,
+        });
+      });
+    } else {
+      // Individual game - show each player
+      game.rounds.forEach(gr => {
+        const roundScore = gr.round.scores[0];
+        const score = game.scoringType === 'NET' 
+          ? (roundScore?.netTotal || 0)
+          : (roundScore?.grossTotal || 0);
+
+        const existing = standings.find(s => s.id === gr.round.playerId);
+        if (existing) {
+          existing.totalScore += score;
+          existing.gamesPlayed++;
+        } else {
+          standings.push({
+            id: gr.round.playerId,
+            name: gr.round.player.name,
+            type: 'player',
+            gamesPlayed: 1,
+            wins: game.winnerId === gr.round.playerId ? 1 : 0,
+            totalScore: score,
+          });
+        }
+      });
+    }
+
+    // Sort by score (lower is better for golf)
+    standings.sort((a, b) => a.totalScore - b.totalScore);
+
+    return res.json({
       game,
       standings,
     });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 });
 

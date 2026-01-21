@@ -6,7 +6,6 @@ import { courseRoutes } from './routes/courses.js';
 import { scoreRoutes } from './routes/scores.js';
 import { userRoutes } from './routes/users.js';
 import gameRoutes from './routes/games.js';
-import matchRoutes from './routes/matches.js';
 import teamRoutes from './routes/teams.js';
 import communityRoutes from './routes/communities.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -24,7 +23,7 @@ app.use(cors({
 app.use(express.json());
 
 // Health check
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
@@ -34,7 +33,6 @@ app.use('/api/courses', courseRoutes);
 app.use('/api/scores', scoreRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/games', gameRoutes);
-app.use('/api/matches', matchRoutes);
 app.use('/api/teams', teamRoutes);
 app.use('/api/communities', communityRoutes);
 

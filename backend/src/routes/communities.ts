@@ -74,9 +74,9 @@ router.get('/:id', async (req, res, next) => {
       return res.status(404).json({ error: 'Community not found' });
     }
 
-    res.json(community);
+    return res.json(community);
   } catch (error) {
-    next(error);
+    return next(error);
   }
 });
 

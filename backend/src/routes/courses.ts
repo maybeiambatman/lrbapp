@@ -5,7 +5,7 @@ import { AppError } from '../middleware/errorHandler.js';
 const router = Router();
 
 // Get all courses
-router.get('/', async (req, res, next) => {
+router.get('/', async (_req, res, next) => {
   try {
     const courses = await prisma.course.findMany({
       include: {

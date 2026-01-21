@@ -18,13 +18,6 @@ router.get('/', async (req, res, next) => {
             id: true,
             name: true,
             format: true,
-            tripId: true,
-          },
-        },
-        _count: {
-          select: {
-            team1Matches: true,
-            team2Matches: true,
           },
         },
       },
@@ -47,15 +40,17 @@ router.get('/:id', async (req, res, next) => {
     const team = await prisma.team.findUnique({
       where: { id },
       include: {
-        game: true,
-        team1Matches: {
+        game: {
           include: {
-            team2: true,
-          },
-        },
-        team2Matches: {
-          include: {
-            team1: true,
+            rounds: {
+              include: {
+                round: {
+                  include: {
+                    player: true,
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -65,30 +60,17 @@ router.get('/:id', async (req, res, next) => {
       return res.status(404).json({ error: 'Team not found' });
     }
 
-    // Get player details from the trip
-    const game = await prisma.game.findUnique({
-      where: { id: team.gameId },
-      include: {
-        trip: {
-          include: {
-            players: {
-              where: {
-                id: {
-                  in: team.playerIds,
-                },
-              },
-            },
-          },
-        },
-      },
-    });
+    // Get player details from the rounds
+    const players = team.game.rounds
+      .map(gr => gr.round.player)
+      .filter(p => team.playerIds.includes(p.id));
 
-    res.json({
+    return res.json({
       ...team,
-      players: game?.trip?.players || [],
+      players,
     });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 });
 
@@ -167,8 +149,20 @@ router.get('/:id/stats', async (req, res, next) => {
     const team = await prisma.team.findUnique({
       where: { id },
       include: {
-        team1Matches: true,
-        team2Matches: true,
+        game: {
+          include: {
+            rounds: {
+              include: {
+                round: {
+                  include: {
+                    player: true,
+                    scores: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     });
 
@@ -176,30 +170,29 @@ router.get('/:id/stats', async (req, res, next) => {
       return res.status(404).json({ error: 'Team not found' });
     }
 
-    const allMatches = [...team.team1Matches, ...team.team2Matches];
-    
+    // Calculate team stats from rounds
+    const teamRounds = team.game.rounds.filter(gr =>
+      team.playerIds.includes(gr.round.playerId)
+    );
+
+    const totalScore = teamRounds.reduce((sum, gr) => {
+      const roundScore = gr.round.scores[0];
+      return sum + (roundScore?.netTotal || roundScore?.grossTotal || 0);
+    }, 0);
+
     const stats = {
-      totalMatches: allMatches.length,
-      completed: allMatches.filter(m => m.status === 'COMPLETED').length,
-      pending: allMatches.filter(m => m.status === 'PENDING').length,
-      inProgress: allMatches.filter(m => m.status === 'IN_PROGRESS').length,
-      wins: allMatches.filter(m => m.winnerId === id).length,
-      losses: allMatches.filter(m => m.status === 'COMPLETED' && m.winnerId && m.winnerId !== id).length,
-      ties: allMatches.filter(m => m.status === 'COMPLETED' && !m.winnerId).length,
-      totalScore: allMatches.reduce((sum, m) => {
-        if (m.team1Id === id) return sum + (m.team1Score || 0);
-        if (m.team2Id === id) return sum + (m.team2Score || 0);
-        return sum;
-      }, 0),
+      totalRounds: teamRounds.length,
+      totalScore,
+      averageScore: teamRounds.length > 0 ? totalScore / teamRounds.length : 0,
+      isWinner: team.game.winnerId === team.id,
     };
 
-    res.json({
+    return res.json({
       team,
       stats,
-      matches: allMatches,
     });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 });
 

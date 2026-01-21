@@ -20,6 +20,7 @@ model User {
 
   // Relations
   createdTrips Trip[]        @relation("TripCreator")
+  createdRounds Round[]      @relation("RoundCreator")
   createdCourses Course[]    @relation("CourseCreator")
   scores      RoundScore[]
   communities Community[]   @relation("CommunityMembers")
@@ -41,7 +42,7 @@ model Course {
   holes      Hole[]
   tees       Tee[]
   trips      Trip[]       @relation("TripCourses")
-  scores     RoundScore[]
+  rounds     Round[]
   architects CourseArchitect[]
 
   @@index([createdBy])
@@ -107,26 +108,22 @@ model CourseArchitect {
 
 // Trip Management
 model Trip {
-  id             String   @id @default(cuid())
-  name           String
-  code           String   @unique
-  startDate      DateTime
-  endDate        DateTime
-  buyInAmount    Float
-  numberOfRounds Int
-  purseTotal     Float    @default(0)
-  isActive       Boolean  @default(true)
-  createdBy      String
-  createdAt      DateTime @default(now())
+  id         String   @id @default(cuid())
+  name       String
+  code       String   @unique
+  startDate  DateTime
+  endDate    DateTime
+  buyInAmount Float   // Per-person buy-in for the trip
+  isActive   Boolean  @default(true)
+  createdBy  String
+  createdAt  DateTime @default(now())
 
   // Relations
   creator  User         @relation("TripCreator", fields: [createdBy], references: [id], onDelete: Cascade)
   players  TripPlayer[]
   courses  Course[]     @relation("TripCourses")
+  rounds   Round[]
   teeTimes TeeTime[]
-  prizes   Prize[]
-  scores   RoundScore[]
-  games    Game[]
 
   @@index([code])
   @@index([createdBy])
@@ -143,69 +140,101 @@ model TripPlayer {
 
   // Relations
   trip   Trip         @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  rounds Round[]
   scores RoundScore[]
 
   @@unique([tripId, name])
   @@index([tripId])
 }
 
-model TeeTime {
-  id          String @id @default(cuid())
-  tripId      String
-  roundNumber Int
-  time        String
-  playerIds   String[] // Array of player IDs
+// Round of golf - can be standalone or part of a trip
+model Round {
+  id          String   @id @default(cuid())
+  tripId      String?  // Optional - null for ad-hoc rounds
+  teeTimeId   String?  // Optional - groups rounds played together
+  courseId    String
+  playerId    String   // TripPlayer playing this round
+  date        DateTime
+  roundNumber Int?     // Only relevant if part of a trip (1, 2, 3, etc.)
+  createdBy   String
+  createdAt   DateTime @default(now())
 
   // Relations
-  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  trip      Trip?        @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  teeTime   TeeTime?     @relation(fields: [teeTimeId], references: [id], onDelete: SetNull)
+  course    Course       @relation(fields: [courseId], references: [id], onDelete: Restrict)
+  player    TripPlayer   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  creator   User         @relation("RoundCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  scores    RoundScore[]
+  games     GameRound[]
+  prizes    Prize[]
 
-  @@index([tripId, roundNumber])
+  @@unique([teeTimeId, playerId])
+  @@index([tripId])
+  @@index([teeTimeId])
+  @@index([courseId])
+  @@index([playerId])
+  @@index([date])
+}
+
+model TeeTime {
+  id        String   @id @default(cuid())
+  tripId    String?  // Optional - can be part of a trip or standalone
+  time      DateTime
+  createdAt DateTime @default(now())
+
+  // Relations
+  trip   Trip?   @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  rounds Round[]
+
+  @@index([tripId])
+  @@index([time])
 }
 
 model Prize {
   id          String    @id @default(cuid())
-  tripId      String
+  roundId     String?   // Prize at round level
+  gameId      String?   // Prize at game level
   name        String
   type        PrizeType
-  roundNumber Int?
   ctpHole     Int?
   amount      Float
   winnerId    String?
+  winnerDistance String? // For CTP prizes - distance to pin
 
   // Relations
-  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  round Round? @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  game  Game?  @relation(fields: [gameId], references: [id], onDelete: Cascade)
 
-  @@index([tripId])
+  @@index([roundId])
+  @@index([gameId])
 }
 
 // Score Tracking
 model RoundScore {
-  id           String      @id @default(cuid())
-  tripId       String
-  playerId     String
-  userId       String?
-  playerName   String
-  roundNumber  Int
-  courseId     String
-  handicap     Float  // Handicap for this round
-  grossTotal   Int         @default(0)
-  netTotal     Int         @default(0)
-  status       RoundStatus @default(NOT_STARTED)
-  isComplete   Boolean     @default(false)
-  ctpHole      Int?
-  ctpDistance  String?
-  updatedAt    DateTime    @updatedAt
-  createdAt    DateTime    @default(now())
+  id          String      @id @default(cuid())
+  roundId     String
+  tripId      String?     // Optional - for reporting/grouping only
+  playerId    String
+  userId      String?
+  playerName  String
+  handicap    Float       // Handicap for this round
+  grossTotal  Int         @default(0)
+  netTotal    Int         @default(0)
+  status      RoundStatus @default(NOT_STARTED)
+  isComplete  Boolean     @default(false)
+  updatedAt   DateTime    @updatedAt
+  createdAt   DateTime    @default(now())
 
   // Relations
-  trip   Trip         @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  round  Round        @relation(fields: [roundId], references: [id], onDelete: Cascade)
   player TripPlayer   @relation(fields: [playerId], references: [id], onDelete: Cascade)
   user   User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
-  course Course       @relation(fields: [courseId], references: [id], onDelete: Restrict)
   holes  HoleScore[]
 
-  @@unique([tripId, playerId, roundNumber])
-  @@index([tripId, roundNumber])
+  @@unique([roundId, playerId])
+  @@index([roundId])
+  @@index([tripId])
   @@index([playerId])
 }
 
@@ -260,10 +289,9 @@ enum GamePlayType {
 enum GameScoringType {
   GROSS
   NET
-  BOTH
 }
 
-enum MatchStatus {
+enum GameStatus {
   PENDING
   IN_PROGRESS
   COMPLETED
@@ -272,51 +300,40 @@ enum MatchStatus {
 
 model Game {
   id          String          @id @default(cuid())
-  tripId      String
   name        String
   format      GameFormat
   playType    GamePlayType
   scoringType GameScoringType
-  roundNumber Int?
   buyInAmount Float           @default(0)
-  purseTotal  Float           @default(0)
+  status      GameStatus      @default(PENDING)
+  isTeamGame  Boolean         @default(false)
+  team1Id     String?
+  team2Id     String?
+  winnerId    String?     // Computed from rounds, cached here
+  winnerType  String?     // 'team' or 'player'
   isActive    Boolean         @default(true)
   createdAt   DateTime        @default(now())
 
   // Relations
-  trip    Trip          @relation(fields: [tripId], references: [id], onDelete: Cascade)
-  matches Match[]
-  teams   Team[]
-
-  @@index([tripId])
-  @@index([tripId, roundNumber])
+  rounds      GameRound[]
+  team1       Team?       @relation("Team1Games", fields: [team1Id], references: [id], onDelete: SetNull)
+  team2       Team?       @relation("Team2Games", fields: [team2Id], references: [id], onDelete: SetNull)
+  teams       Team[]      @relation("GameTeams")
+  prizes      Prize[]
 }
 
-model Match {
-  id             String      @id @default(cuid())
-  gameId         String
-  roundNumber    Int
-  status         MatchStatus @default(PENDING)
-  isTeamMatch    Boolean     @default(false)
-  team1Id        String?
-  team2Id        String?
-  player1Id      String?
-  player2Id      String?
-  team1Score     Float?
-  team2Score     Float?
-  player1Score   Float?
-  player2Score   Float?
-  winnerId       String?
-  winnerType     String? // 'team' or 'player'
-  createdAt      DateTime    @default(now())
+// GameRound - many-to-many relationship between Games and Rounds
+model GameRound {
+  gameId  String
+  roundId String
 
   // Relations
-  game    Game  @relation(fields: [gameId], references: [id], onDelete: Cascade)
-  team1   Team? @relation("Team1Matches", fields: [team1Id], references: [id], onDelete: SetNull)
-  team2   Team? @relation("Team2Matches", fields: [team2Id], references: [id], onDelete: SetNull)
+  game  Game  @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  round Round @relation(fields: [roundId], references: [id], onDelete: Cascade)
 
+  @@id([gameId, roundId])
   @@index([gameId])
-  @@index([roundNumber])
+  @@index([roundId])
 }
 
 model Team {
@@ -327,9 +344,9 @@ model Team {
   createdAt DateTime @default(now())
 
   // Relations
-  game           Game    @relation(fields: [gameId], references: [id], onDelete: Cascade)
-  team1Matches   Match[] @relation("Team1Matches")
-  team2Matches   Match[] @relation("Team2Matches")
+  game         Game  @relation("GameTeams", fields: [gameId], references: [id], onDelete: Cascade)
+  team1Games   Game[] @relation("Team1Games")
+  team2Games   Game[] @relation("Team2Games")
 
   @@index([gameId])
 }

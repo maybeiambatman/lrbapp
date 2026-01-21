@@ -1,27 +1,25 @@
 import { Router } from 'express';
 import prisma from '../utils/prisma.js';
-import { AppError } from '../middleware/errorHandler.js';
 
 const router = Router();
 
 // Get scores for a trip
 router.get('/trip/:tripId', async (req, res, next) => {
   try {
-    const { round } = req.query;
-    
-    const where: any = { tripId: req.params.tripId };
-    if (round) {
-      where.roundNumber = parseInt(round as string);
-    }
-    
     const scores = await prisma.roundScore.findMany({
-      where,
+      where: { tripId: req.params.tripId },
       include: {
         holes: { orderBy: { holeNumber: 'asc' } },
         player: true,
+        round: {
+          select: {
+            id: true,
+            roundNumber: true,
+            date: true,
+          },
+        },
       },
       orderBy: [
-        { roundNumber: 'asc' },
         { netTotal: 'asc' },
       ],
     });
@@ -39,9 +37,13 @@ router.get('/player/:playerId', async (req, res, next) => {
       where: { playerId: req.params.playerId },
       include: {
         holes: { orderBy: { holeNumber: 'asc' } },
-        course: true,
+        round: {
+          include: {
+            course: true,
+          },
+        },
       },
-      orderBy: { roundNumber: 'asc' },
+      orderBy: { createdAt: 'desc' },
     });
     
     res.json(scores);
@@ -57,10 +59,9 @@ router.post('/', async (req, res, next) => {
     
     const score = await prisma.roundScore.upsert({
       where: {
-        tripId_playerId_roundNumber: {
-          tripId: scoreData.tripId,
+        roundId_playerId: {
+          roundId: scoreData.roundId,
           playerId: scoreData.playerId,
-          roundNumber: scoreData.roundNumber,
         },
       },
       create: {

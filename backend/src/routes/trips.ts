@@ -5,13 +5,12 @@ import { AppError } from '../middleware/errorHandler.js';
 const router = Router();
 
 // Get all trips
-router.get('/', async (req, res, next) => {
+router.get('/', async (_req, res, next) => {
   try {
     const trips = await prisma.trip.findMany({
       include: {
         players: true,
         courses: true,
-        prizes: true,
         teeTimes: true,
       },
       orderBy: { createdAt: 'desc' },
@@ -30,7 +29,6 @@ router.get('/:id', async (req, res, next) => {
       include: {
         players: true,
         courses: { include: { holes: true, tees: true } },
-        prizes: true,
         teeTimes: true,
       },
     });
@@ -53,7 +51,6 @@ router.get('/code/:code', async (req, res, next) => {
       include: {
         players: true,
         courses: { include: { holes: true, tees: true } },
-        prizes: true,
         teeTimes: true,
       },
     });
@@ -79,7 +76,6 @@ router.post('/', async (req, res, next) => {
       include: {
         players: true,
         courses: true,
-        prizes: true,
       },
     });
     res.status(201).json(trip);
@@ -97,7 +93,6 @@ router.put('/:id', async (req, res, next) => {
       include: {
         players: true,
         courses: true,
-        prizes: true,
       },
     });
     res.json(trip);
@@ -125,14 +120,6 @@ router.post('/:id/players', async (req, res, next) => {
       data: {
         tripId: req.params.id,
         ...req.body,
-      },
-    });
-    
-    // Update purse total
-    await prisma.trip.update({
-      where: { id: req.params.id },
-      data: {
-        purseTotal: { increment: req.body.buyIn },
       },
     });
     
