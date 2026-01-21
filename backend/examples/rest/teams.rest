@@ -1,0 +1,99 @@
+@baseUrl = http://localhost:3001/api
+
+###
+# Get all teams
+GET {{baseUrl}}/teams
+
+###
+# Get teams for a specific game
+GET {{baseUrl}}/teams?gameId=YOUR_GAME_ID
+
+###
+# Get single team by ID
+GET {{baseUrl}}/teams/YOUR_TEAM_ID
+
+###
+# Get team statistics and match history
+GET {{baseUrl}}/teams/YOUR_TEAM_ID/stats
+
+###
+# Create a new team
+POST {{baseUrl}}/teams
+Content-Type: application/json
+
+{
+  "gameId": "YOUR_GAME_ID",
+  "name": "Team Tiger & Rory",
+  "playerIds": [
+    "YOUR_PLAYER1_ID",
+    "YOUR_PLAYER2_ID"
+  ]
+}
+
+###
+# Create a team with three players (for scramble formats)
+POST {{baseUrl}}/teams
+Content-Type: application/json
+
+{
+  "gameId": "YOUR_GAME_ID",
+  "name": "The A-Team",
+  "playerIds": [
+    "YOUR_PLAYER1_ID",
+    "YOUR_PLAYER2_ID",
+    "YOUR_PLAYER3_ID"
+  ]
+}
+
+###
+# Create a team with four players
+POST {{baseUrl}}/teams
+Content-Type: application/json
+
+{
+  "gameId": "YOUR_GAME_ID",
+  "name": "Foursome Squad",
+  "playerIds": [
+    "YOUR_PLAYER1_ID",
+    "YOUR_PLAYER2_ID",
+    "YOUR_PLAYER3_ID",
+    "YOUR_PLAYER4_ID"
+  ]
+}
+
+###
+# Update team name
+PUT {{baseUrl}}/teams/YOUR_TEAM_ID
+Content-Type: application/json
+
+{
+  "name": "Updated Team Name"
+}
+
+###
+# Update team players
+PUT {{baseUrl}}/teams/YOUR_TEAM_ID
+Content-Type: application/json
+
+{
+  "playerIds": [
+    "YOUR_PLAYER1_ID",
+    "YOUR_PLAYER2_ID"
+  ]
+}
+
+###
+# Delete a team
+DELETE {{baseUrl}}/teams/YOUR_TEAM_ID
+
+###
+# NOTES:
+# - playerIds are TripPlayer IDs (not User IDs)
+# - Teams can have 2-4 players typically
+# - Best Ball usually uses 2-player teams
+# - Scramble format can use 2-4 player teams
+# - The /stats endpoint provides:
+#   - Total matches played
+#   - Wins, losses, ties
+#   - Total score across all matches
+#   - Match history

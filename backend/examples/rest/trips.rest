@@ -1,0 +1,56 @@
+@baseUrl = http://localhost:3001
+@tripCode = MSTR26
+
+### Get admin user (to get the ID for creating trips)
+GET {{baseUrl}}/api/users/email/admin@golf.com
+
+### Save the user ID from the response above
+@adminUserId = UPDATE_WITH_ACTUAL_ID
+
+### Get all trips
+GET {{baseUrl}}/api/trips
+
+### Get trip by code (from seed data)
+GET {{baseUrl}}/api/trips/code/{{tripCode}}
+
+### Get trip by ID (update this with actual ID)
+@tripId = your-trip-id-here
+GET {{baseUrl}}/api/trips/{{tripId}}
+
+### Create a new trip (update adminUserId with actual ID from user query above)
+POST {{baseUrl}}/api/trips
+Content-Type: application/json
+
+{
+  "name": "Spring Golf Getaway 2026",
+  "code": "SPRING26",
+  "startDate": "2026-04-15T00:00:00.000Z",
+  "endDate": "2026-04-18T00:00:00.000Z",
+  "buyInAmount": 150,
+  "numberOfRounds": 4,
+  "createdBy": "{{adminUserId}}"
+}
+
+### Update a trip
+PUT {{baseUrl}}/api/trips/{{tripId}}
+Content-Type: application/json
+
+{
+  "name": "Spring Golf Getaway 2026 (Updated)",
+  "buyInAmount": 175,
+  "purseTotal": 600
+}
+
+### Add player to trip
+@playerId = player-id-here
+POST {{baseUrl}}/api/trips/{{tripId}}/players
+Content-Type: application/json
+
+{
+  "name": "John Smith",
+  "handicap": 12.5,
+  "buyIn": 150
+}
+
+### Delete a trip
+DELETE {{baseUrl}}/api/trips/{{tripId}}

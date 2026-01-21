@@ -1,0 +1,64 @@
+@baseUrl = http://localhost:3001
+
+### Get all courses
+GET {{baseUrl}}/api/courses
+
+### Get course by ID (update with actual ID)
+@courseId = cmka8zbed0005mrxzcpki15t5
+GET {{baseUrl}}/api/courses/{{courseId}}
+
+### Create a new course
+POST {{baseUrl}}/api/courses
+Content-Type: application/json
+
+{
+  "name": "Pebble Beach Golf Links",
+  "createdBy": "admin-user-id",
+  "tees": [
+    {
+      "name": "Championship",
+      "color": "Blue",
+      "rating": 74.5,
+      "slope": 145,
+      "yardage": 7040
+    },
+    {
+      "name": "Member",
+      "color": "White",
+      "rating": 72.8,
+      "slope": 140,
+      "yardage": 6737
+    }
+  ],
+  "holes": [
+    { "number": 1, "par": 4, "handicapRank": 11, "yards": 380 },
+    { "number": 2, "par": 5, "handicapRank": 9, "yards": 505 },
+    { "number": 3, "par": 4, "handicapRank": 15, "yards": 390 },
+    { "number": 4, "par": 4, "handicapRank": 5, "yards": 325 },
+    { "number": 5, "par": 3, "handicapRank": 17, "yards": 190 },
+    { "number": 6, "par": 5, "handicapRank": 1, "yards": 525 },
+    { "number": 7, "par": 3, "handicapRank": 13, "yards": 110 },
+    { "number": 8, "par": 4, "handicapRank": 3, "yards": 420 },
+    { "number": 9, "par": 4, "handicapRank": 7, "yards": 470 },
+    { "number": 10, "par": 4, "handicapRank": 12, "yards": 445 },
+    { "number": 11, "par": 4, "handicapRank": 6, "yards": 385 },
+    { "number": 12, "par": 3, "handicapRank": 16, "yards": 200 },
+    { "number": 13, "par": 4, "handicapRank": 4, "yards": 445 },
+    { "number": 14, "par": 5, "handicapRank": 10, "yards": 575 },
+    { "number": 15, "par": 4, "handicapRank": 8, "yards": 400 },
+    { "number": 16, "par": 4, "handicapRank": 14, "yards": 400 },
+    { "number": 17, "par": 3, "handicapRank": 18, "yards": 180 },
+    { "number": 18, "par": 5, "handicapRank": 2, "yards": 545 }
+  ]
+}
+
+### Update a course
+PUT {{baseUrl}}/api/courses/{{courseId}}
+Content-Type: application/json
+
+{
+  "name": "Pebble Beach Golf Links (Updated)"
+}
+
+### Delete a course
+DELETE {{baseUrl}}/api/courses/{{courseId}}

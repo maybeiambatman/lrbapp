@@ -1,12 +1,14 @@
 {
   "name": "lrbapp",
-  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-20-bullseye",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
   "remoteUser": "node",
   "features": {
     "ghcr.io/devcontainers/features/github-cli:1": {}
   },
-  "postCreateCommand": "npm install",
-  "forwardPorts": [5173, 4173],
+  "postCreateCommand": "npm install && cd backend && npm install",
+  "forwardPorts": [5173, 4173, 3001, 5432, 5555],
   "portsAttributes": {
     "5173": {
       "label": "Vite dev",
@@ -14,6 +16,15 @@
     },
     "4173": {
       "label": "Vite preview"
+    },
+    "3001": {
+      "label": "Backend API"
+    },
+    "5432": {
+      "label": "PostgreSQL"
+    },
+    "5555": {
+      "label": "Prisma Studio"
     }
   },
   "customizations": {
@@ -27,7 +38,10 @@
         "esbenp.prettier-vscode",
         "editorconfig.editorconfig",
         "dsznajder.es7-react-js-snippets",
-        "usernamehm.errorlens"
+        "usernamehm.errorlens",
+        "Prisma.prisma",
+        "mtxr.sqltools",
+        "humao.rest-client"
       ]
     }
   },
