@@ -41,7 +41,8 @@
         "usernamehm.errorlens",
         "Prisma.prisma",
         "mtxr.sqltools",
-        "humao.rest-client"
+        "humao.rest-client",
+        "HashiCorp.terraform"
       ]
     }
   },

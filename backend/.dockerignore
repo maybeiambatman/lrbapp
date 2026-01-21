@@ -1,0 +1,38 @@
+# Ignore node_modules in Docker context
+node_modules
+npm-debug.log
+
+# Ignore build artifacts
+dist
+
+# Ignore development files
+*.md
+!README.md
+.git
+.gitignore
+.env*
+!.env.example
+
+# Ignore test files
+**/*.test.ts
+**/*.spec.ts
+__tests__
+
+# Ignore CI/CD and deployment configs
+.github
+terraform
+scripts
+
+# Ignore IDE files
+.vscode
+.idea
+*.swp
+*.swo
+
+# Ignore documentation
+ARCHITECTURE.md
+GAME_SCENARIOS.md
+DEVELOPMENT.md
+
+# Ignore example files
+examples
