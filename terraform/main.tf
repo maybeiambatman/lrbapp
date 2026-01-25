@@ -139,11 +139,16 @@ resource "google_sql_database" "database" {
   instance = google_sql_database_instance.postgres.name
 }
 
+# Retrieve database password from Secret Manager
+data "google_secret_manager_secret_version" "db_password" {
+  secret = var.database_password_secret
+}
+
 # Database user
 resource "google_sql_user" "db_user" {
   name     = var.database_user
   instance = google_sql_database_instance.postgres.name
-  password = var.database_password
+  password = data.google_secret_manager_secret_version.db_password.secret_data
 }
 
 # Secret Manager for database URL

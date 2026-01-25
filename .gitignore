@@ -33,13 +33,12 @@ dist-ssr
 # Terraform environment files (contain sensitive data)
 terraform/environments/**/*.tfvars
 !terraform/environments/**/*.tfvars.example
+terraform/environments/**/backend.tfvars
+!terraform/environments/**/backend.tfvars.example
 
 # GCP credentials
 gcp-key.json
 *.json.key
-
-# Sensitive backend configs (optional - remove if you want to track these)
-# terraform/environments/**/backend.tfvars
 
 # Local environment files
 .env

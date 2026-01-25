@@ -68,10 +68,10 @@ variable "database_user" {
   default     = "lrbapp_user"
 }
 
-variable "database_password" {
-  description = "Database password"
+variable "database_password_secret" {
+  description = "Name of the Secret Manager secret containing the database password"
   type        = string
-  sensitive   = true
+  default     = "lrbapp-db-password"
 }
 
 # Cloud Run Configuration
