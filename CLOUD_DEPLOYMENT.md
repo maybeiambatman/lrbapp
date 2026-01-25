@@ -27,7 +27,13 @@ This branch contains a complete GCP deployment setup for the LRBApp using Terraf
 
 ### 1. Prerequisites
 
-Install required tools:
+The following tools are pre-installed in the dev container:
+- **gcloud CLI**: Google Cloud command-line tool
+- **Terraform**: Infrastructure as Code tool
+- **Docker**: Container build and management
+- **Cloud SQL Proxy**: Database connection tool
+
+If running locally outside the dev container, install these tools:
 ```bash
 # gcloud CLI
 curl https://sdk.cloud.google.com | bash
@@ -48,23 +54,14 @@ brew install cloud-sql-proxy  # macOS
 Follow the complete checklist in [GCP_SETUP.md](GCP_SETUP.md):
 
 ```bash
-# Create project
-gcloud projects create YOUR-PROJECT-ID --name="LRBApp"
 
 # Enable billing and set default project
-gcloud config set project YOUR-PROJECT-ID
-
-# Enable required APIs
-gcloud services enable \
-  sqladmin.googleapis.com \
-  run.googleapis.com \
-  vpcaccess.googleapis.com \
-  secretmanager.googleapis.com \
-  artifactregistry.googleapis.com
+gcloud config set project lrbapp-485003
+gcloud auth login
 
 # Create Terraform state buckets
-gsutil mb -p YOUR-PROJECT-ID gs://YOUR-PROJECT-ID-terraform-state-dev
-gsutil versioning set on gs://YOUR-PROJECT-ID-terraform-state-dev
+gsutil mb -p lrbapp-485003 gs://lrbapp-485003-terraform-state-dev
+gsutil versioning set on gs://lrbapp-485003-terraform-state-dev
 ```
 
 ### 3. Configure Terraform

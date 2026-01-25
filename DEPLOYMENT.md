@@ -25,6 +25,7 @@ The deployment uses the following GCP services:
 ### GCP Account Setup
 
 1. Create a GCP project:
+
    ```bash
    gcloud projects create YOUR-PROJECT-ID --name="LRBApp"
    ```
@@ -32,11 +33,13 @@ The deployment uses the following GCP services:
 2. Enable billing for your project (required for Cloud SQL and other services)
 
 3. Set default project:
+
    ```bash
    gcloud config set project YOUR-PROJECT-ID
    ```
 
 4. Authenticate:
+
    ```bash
    gcloud auth login
    gcloud auth application-default login
@@ -86,6 +89,7 @@ Update the backend configuration files:
 Update the `terraform.tfvars` files for each environment:
 
 **Development** (`terraform/environments/dev/terraform.tfvars`):
+
 ```hcl
 project_id = "YOUR-PROJECT-ID"
 environment = "dev"
@@ -105,6 +109,7 @@ allow_unauthenticated_access = true
 ```
 
 **Production** (`terraform/environments/prod/terraform.tfvars`):
+
 ```hcl
 project_id = "YOUR-PROJECT-ID"
 environment = "prod"
