@@ -72,17 +72,24 @@ resource "google_sql_database_instance" "postgres" {
   
   settings {
     tier              = var.database_tier
-    availability_type = var.environment == "prod" ? "REGIONAL" : "ZONAL"
+    availability_type = "ZONAL"  # Always ZONAL for cost savings (REGIONAL doubles cost)
     disk_size         = var.database_disk_size
-    disk_type         = "PD_SSD"
+    disk_type         = var.environment == "prod" ? "PD_SSD" : "PD_HDD"  # HDD is cheaper for dev
+    disk_autoresize   = false  # Disable autoresize to prevent surprise costs
+    
+    # Enable IAM database authentication
+    database_flags {
+      name  = "cloudsql.iam_authentication"
+      value = "on"
+    }
     
     backup_configuration {
-      enabled                        = true
+      enabled                        = var.environment == "prod"  # Disable backups in dev to save cost
       point_in_time_recovery_enabled = var.environment == "prod"
       start_time                     = "03:00"
-      transaction_log_retention_days = 7
+      transaction_log_retention_days = var.environment == "prod" ? 7 : 1
       backup_retention_settings {
-        retained_backups = 7
+        retained_backups = var.environment == "prod" ? 7 : 1
       }
     }
     
@@ -97,8 +104,9 @@ resource "google_sql_database_instance" "postgres" {
       update_track = "stable"
     }
     
+    # Query insights adds minor cost - disable in dev
     insights_config {
-      query_insights_enabled  = true
+      query_insights_enabled  = var.environment == "prod"
       query_string_length     = 1024
       record_application_tags = false
       record_client_address   = false
@@ -149,6 +157,42 @@ resource "google_sql_user" "db_user" {
   name     = var.database_user
   instance = google_sql_database_instance.postgres.name
   password = data.google_secret_manager_secret_version.db_password.secret_data
+}
+
+# IAM database users (passwordless authentication via Google account)
+resource "google_sql_user" "iam_users" {
+  for_each = toset(var.iam_db_users)
+  
+  name     = each.value
+  instance = google_sql_database_instance.postgres.name
+  type     = "CLOUD_IAM_USER"
+}
+
+# IAM database groups (passwordless authentication via Google Group)
+resource "google_sql_user" "iam_groups" {
+  for_each = toset(var.iam_db_groups)
+  
+  name     = each.value
+  instance = google_sql_database_instance.postgres.name
+  type     = "CLOUD_IAM_GROUP"
+}
+
+# Grant IAM users the Cloud SQL Instance User role
+resource "google_project_iam_member" "sql_instance_user" {
+  for_each = toset(var.iam_db_users)
+  
+  project = var.project_id
+  role    = "roles/cloudsql.instanceUser"
+  member  = "user:${each.value}"
+}
+
+# Grant IAM groups the Cloud SQL Instance User role
+resource "google_project_iam_member" "sql_instance_user_groups" {
+  for_each = toset(var.iam_db_groups)
+  
+  project = var.project_id
+  role    = "roles/cloudsql.instanceUser"
+  member  = "group:${each.value}"
 }
 
 # Secret Manager for database URL

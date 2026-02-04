@@ -44,5 +44,17 @@ RUN apt-get update \
     && apt-get update \
     && apt-get install -y docker-ce-cli docker-buildx-plugin docker-compose-plugin
 
+# Create docker group (or reuse existing GID 999 group) and add node user for Docker socket access
+# The GID 999 matches the typical host docker group - reuse if already taken in base image
+RUN if getent group docker > /dev/null; then \
+        usermod -aG docker node; \
+    elif getent group 999 > /dev/null; then \
+        EXISTING_GROUP="$(getent group 999 | cut -d: -f1)"; \
+        usermod -aG "$EXISTING_GROUP" node; \
+    else \
+        groupadd -g 999 docker; \
+        usermod -aG docker node; \
+    fi
+
 # Clean up
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*

@@ -55,6 +55,31 @@ terraform/
 | `subnet_cidr` | `10.0.0.0/24` | VPC subnet CIDR |
 | `vpc_connector_cidr` | `10.8.0.0/28` | VPC connector CIDR |
 | `allow_unauthenticated_access` | `true` | Allow public access |
+| `iam_db_users` | `[]` | IAM users for passwordless DB access |
+| `iam_db_groups` | `[]` | IAM groups for passwordless DB access |
+
+## IAM Database Authentication
+
+Enable passwordless database access for team members via their Google accounts.
+
+```hcl
+# terraform.tfvars
+iam_db_users = [
+  "developer@gmail.com",
+  "admin@company.com"
+]
+
+iam_db_groups = [
+  "dev-team@company.com"  # Requires Cloud Identity
+]
+```
+
+This automatically:
+1. Enables `cloudsql.iam_authentication` flag on the instance
+2. Creates IAM database users
+3. Grants `roles/cloudsql.instanceUser` IAM role
+
+After applying, grant database privileges manually (see [Deployment Guide](deployment/deploying.md#iam-database-access-passwordless-login)).
 
 ## Workspaces
 

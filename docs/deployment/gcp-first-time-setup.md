@@ -178,11 +178,31 @@ rm gcp-key.json
 
 ## Cost Estimates
 
-### Development
-- Cloud SQL (db-f1-micro): ~$7-15/month
-- Cloud Run (scale to zero): ~$0-5/month
-- Networking: ~$1/month
-- **Total: ~$8-21/month**
+### Development (Optimized for Minimal Cost)
+
+Current configuration uses the cheapest possible options:
+
+| Service | Configuration | Monthly Cost |
+|---------|--------------|--------------|
+| Cloud SQL | db-f1-micro, HDD, no backups | ~$7-9 |
+| Cloud Run | 256Mi, scale to zero | ~$0 (free tier) |
+| VPC Connector | e2-micro (required) | ~$6-7 |
+| Secret Manager | 2 secrets | Free |
+| Artifact Registry | <500MB | Free |
+| **Total** | | **~$13-16/month** |
+
+**What's NOT free:**
+- Cloud SQL has no free tier (db-f1-micro is cheapest at ~$7-9/month)
+- VPC Connector is required for private DB access (~$6-7/month)
+
+**Cost-saving settings applied:**
+- `min_instances = 0` - Scale to zero when idle
+- `max_instances = 2` - Prevents runaway scaling
+- `backend_memory = "256Mi"` - Minimum for Node.js
+- `disk_type = "PD_HDD"` - Cheaper than SSD for dev
+- `disk_autoresize = false` - Prevents surprise disk costs
+- Backups disabled in dev
+- Query insights disabled in dev
 
 ### Production
 - Cloud SQL (db-custom-2-7680): ~$120-180/month

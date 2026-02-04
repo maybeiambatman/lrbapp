@@ -160,6 +160,62 @@ gcloud run services update-traffic lrbapp-backend-dev \
 
 Production requires typing `DESTROY-PROD` to confirm.
 
+## IAM Database Access (Passwordless Login)
+
+Allow team members to access Cloud SQL from GCP Console without a password.
+
+### Add Users via Terraform (Recommended)
+
+Edit `terraform/environments/dev/terraform.tfvars`:
+
+```hcl
+iam_db_users = [
+  "developer@gmail.com",
+  "admin@company.com"
+]
+
+# For Google Workspace groups (requires Cloud Identity)
+iam_db_groups = [
+  "dev-team@company.com"
+]
+```
+
+Then apply:
+```bash
+./scripts/deploy.sh dev
+```
+
+### Grant Database Privileges
+
+After adding IAM users, grant them database permissions:
+
+```bash
+# Connect via Cloud SQL Proxy
+cloud-sql-proxy YOUR-PROJECT:us-central1:lrbapp-db-dev --port=5433 &
+
+# Connect with admin user
+psql "postgresql://lrbapp_user:PASSWORD@localhost:5433/lrbapp"
+```
+
+Run in psql:
+```sql
+-- Grant full access
+GRANT ALL PRIVILEGES ON DATABASE lrbapp TO "developer@gmail.com";
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO "developer@gmail.com";
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO "developer@gmail.com";
+
+-- Or read-only access
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO "readonly@gmail.com";
+```
+
+### Connect from GCP Console
+
+1. Go to **Cloud SQL** → your instance → **Cloud SQL Studio**
+2. Select database: `lrbapp`
+3. Select your IAM user
+4. Leave password **blank**
+5. Click **Authenticate** - uses your Google login
+
 ## CI/CD Deployment
 
 Push to branch for automatic deployment:

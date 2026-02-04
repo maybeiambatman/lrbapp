@@ -6,13 +6,25 @@ region = "us-central1"
 database_tier = "db-f1-micro"
 database_disk_size = 10
 
-# Cloud Run Configuration
+# Cloud Run Configuration (optimized for free tier)
 backend_cpu = "1"
-backend_memory = "512Mi"
-min_instances = 0
-max_instances = 5
+backend_memory = "256Mi"  # Minimum for Node.js
+min_instances = 0          # Scale to zero when idle
+max_instances = 2          # Limit max to reduce accidental costs
 allow_unauthenticated_access = true
 
 # Network
 subnet_cidr = "10.0.0.0/24"
 vpc_connector_cidr = "10.8.0.0/28"
+
+# IAM Database Access (passwordless login via Google account)
+# Add team members who need direct database access from GCP Console
+iam_db_users = [
+  # "developer@gmail.com",
+  # "admin@company.com"
+]
+
+# IAM Groups (requires Cloud Identity / Google Workspace)
+iam_db_groups = [
+  # "dev-team@company.com"
+]

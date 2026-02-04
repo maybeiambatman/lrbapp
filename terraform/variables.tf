@@ -88,25 +88,38 @@ variable "backend_cpu" {
 }
 
 variable "backend_memory" {
-  description = "Memory allocation for backend"
+  description = "Memory allocation for backend (256Mi is minimum for Node.js)"
   type        = string
-  default     = "512Mi"
+  default     = "256Mi"
 }
 
 variable "min_instances" {
-  description = "Minimum number of Cloud Run instances"
+  description = "Minimum number of Cloud Run instances (0 = scale to zero for cost savings)"
   type        = number
   default     = 0
 }
 
 variable "max_instances" {
-  description = "Maximum number of Cloud Run instances"
+  description = "Maximum number of Cloud Run instances (lower = less cost risk)"
   type        = number
-  default     = 10
+  default     = 2
 }
 
 variable "allow_unauthenticated_access" {
   description = "Allow unauthenticated access to Cloud Run service"
   type        = bool
   default     = true
+}
+
+# IAM Database Authentication
+variable "iam_db_users" {
+  description = "List of IAM users (emails) to grant database access. Use full email for users."
+  type        = list(string)
+  default     = []
+}
+
+variable "iam_db_groups" {
+  description = "List of IAM groups (emails) to grant database access. Requires Cloud Identity."
+  type        = list(string)
+  default     = []
 }
