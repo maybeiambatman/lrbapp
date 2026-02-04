@@ -22,3 +22,29 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+.terraform.lock.hcl
+
+# Terraform environment files (contain sensitive data)
+terraform/environments/**/*.tfvars
+!terraform/environments/**/*.tfvars.example
+terraform/environments/**/backend.tfvars
+!terraform/environments/**/backend.tfvars.example
+
+# GCP credentials
+gcp-key.json
+*.json.key
+
+# Local environment files
+.env
+.env.local
+.env.*.local
+
+# Cloud SQL Proxy
+cloud-sql-proxy
+

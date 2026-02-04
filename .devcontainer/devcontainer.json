@@ -4,10 +4,14 @@
   "service": "app",
   "workspaceFolder": "/workspace",
   "remoteUser": "node",
-  "features": {
-    "ghcr.io/devcontainers/features/github-cli:1": {}
-  },
+  // "features": {
+  //   "ghcr.io/devcontainers/features/github-cli:1": {},
+  //   "ghcr.io/jajera/features/gcloud-cli:1": {
+  //     "version": "1.0.1"
+  //   }
+  // },
   "postCreateCommand": "npm install && cd backend && npm install",
+  "postStartCommand": "sudo chmod 666 /var/run/docker.sock 2>/dev/null || true",
   "forwardPorts": [5173, 4173, 3001, 5432, 5555],
   "portsAttributes": {
     "5173": {
@@ -41,7 +45,10 @@
         "usernamehm.errorlens",
         "Prisma.prisma",
         "mtxr.sqltools",
-        "humao.rest-client"
+        "humao.rest-client",
+        "HashiCorp.terraform",
+        "GoogleCloudTools.cloudcode",
+        "ms-toolsai.jupyter-keymap"
       ]
     }
   },

@@ -1,0 +1,30 @@
+project_id = "your-gcp-project-id"
+environment = "prod"
+region = "us-central1"
+
+# Database Configuration
+database_tier = "db-custom-2-7680"  # 2 vCPUs, 7.5GB RAM
+database_disk_size = 100
+
+# Cloud Run Configuration
+backend_cpu = "2"
+backend_memory = "2Gi"
+min_instances = 1
+max_instances = 100
+allow_unauthenticated_access = false  # Use authentication in production
+
+# Network
+subnet_cidr = "10.1.0.0/24"
+vpc_connector_cidr = "10.9.0.0/28"
+
+# IAM Database Access (passwordless login via Google account)
+# Add team members who need direct database access from GCP Console
+iam_db_users = [
+  # "developer@gmail.com",
+  # "admin@company.com"
+]
+
+# IAM Groups (requires Cloud Identity / Google Workspace)
+iam_db_groups = [
+  # "dev-team@company.com"
+]
