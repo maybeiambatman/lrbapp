@@ -74,8 +74,8 @@ resource "google_sql_database_instance" "postgres" {
     tier              = var.database_tier
     availability_type = "ZONAL"  # Always ZONAL for cost savings (REGIONAL doubles cost)
     disk_size         = var.database_disk_size
-    disk_type         = var.environment == "prod" ? "PD_SSD" : "PD_HDD"  # HDD is cheaper for dev
-    disk_autoresize   = false  # Disable autoresize to prevent surprise costs
+    disk_type         = "PD_SSD"  # Use SSD for all environments
+    disk_autoresize   = true  # Allow autoresize
     
     # Enable IAM database authentication
     database_flags {
@@ -84,12 +84,12 @@ resource "google_sql_database_instance" "postgres" {
     }
     
     backup_configuration {
-      enabled                        = var.environment == "prod"  # Disable backups in dev to save cost
+      enabled                        = true  # Keep backups enabled
       point_in_time_recovery_enabled = var.environment == "prod"
       start_time                     = "03:00"
-      transaction_log_retention_days = var.environment == "prod" ? 7 : 1
+      transaction_log_retention_days = 7
       backup_retention_settings {
-        retained_backups = var.environment == "prod" ? 7 : 1
+        retained_backups = 7
       }
     }
     
@@ -106,14 +106,14 @@ resource "google_sql_database_instance" "postgres" {
     
     # Query insights adds minor cost - disable in dev
     insights_config {
-      query_insights_enabled  = var.environment == "prod"
+      query_insights_enabled  = true
       query_string_length     = 1024
       record_application_tags = false
       record_client_address   = false
     }
   }
   
-  deletion_protection = var.environment == "prod"
+  deletion_protection = true
   
   depends_on = [
     google_project_service.required_apis,
@@ -259,11 +259,6 @@ resource "google_cloud_run_v2_service" "backend" {
       env {
         name = "NODE_ENV"
         value = var.environment
-      }
-      
-      env {
-        name = "PORT"
-        value = "3001"
       }
       
       env {

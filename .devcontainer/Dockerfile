@@ -58,3 +58,6 @@ RUN if getent group docker > /dev/null; then \
 
 # Clean up
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Note: Docker socket permissions are handled at runtime via group membership (node user added to docker group above)
+# The socket is mounted from the host and its permissions are inherited
